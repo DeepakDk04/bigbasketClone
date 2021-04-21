@@ -9,7 +9,7 @@ from .serializers import ProductListSerializer, ProductDetailSerializer
 # Create your views here.
 
 
-class ProductView(ListAPIView):
+class ProductListView(ListAPIView):
     '''
     Displays all the Products
     '''
