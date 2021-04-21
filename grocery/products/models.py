@@ -6,7 +6,6 @@ from django.db import models
 class Product(models.Model):
     name = models.CharField(max_length=50)
     category = models.ManyToManyField('Category')
-    isOffer = models.BooleanField(default=False)
     offer = models.ForeignKey(
         'Offer', on_delete=models.CASCADE, blank=True, null=True)
     stockCount = models.IntegerField()
