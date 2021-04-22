@@ -1,4 +1,4 @@
-from re import U
+from django.db import models
 from django.db.models import fields
 from .models import Customer, CustomerProfile, DeliveryAddress
 from django.contrib.auth.models import User
@@ -13,7 +13,7 @@ class ProfileCreateSerializer(ModelSerializer):
         fields = ['user', 'age', 'contactno']
 
 
-class userViewOrUpdateSerializer(ModelSerializer):
+class userModelCustomSerializer(ModelSerializer):
 
     class Meta:
         model = User
@@ -23,17 +23,17 @@ class userViewOrUpdateSerializer(ModelSerializer):
 
 class ProfileViewSerializer(ModelSerializer):
 
-    user = userViewOrUpdateSerializer()
+    user = userModelCustomSerializer()
 
     class Meta:
         model = CustomerProfile
-        fields = ['user', 'age', 'contactno']
+        fields = ['id', 'user', 'age', 'contactno']
         depth = 1
 
 
 class ProfileUpdateSerializer(ModelSerializer):
 
-    user = userViewOrUpdateSerializer()
+    user = userModelCustomSerializer()
 
     class Meta:
         model = CustomerProfile
@@ -88,14 +88,50 @@ class AddressCreateOrViewOrUpdateSerializer(ModelSerializer):
         fields = ['doorno', 'street', 'area', 'landmark']
 
 
-class CustomerCreateOrViewOrUpdateSerializer(ModelSerializer):
+class AddressDeleteSerializer(ModelSerializer):
+
+    class Meta:
+        model = DeliveryAddress
+        fields = ['id']
+
+
+class CustomerCreateOrUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = Customer
         fields = ['profile', 'address']
 
 
+class CustomerView__ProfileSerializer(ModelSerializer):
+
+    user = userModelCustomSerializer()
+
+    class Meta:
+        model = CustomerProfile
+        fields = '__all__'
+
+
+class CustomerViewSerializer(ModelSerializer):
+
+    profile = CustomerView__ProfileSerializer()
+
+    class Meta:
+        model = Customer
+        fields = ['id', 'profile', 'address']
+        depth = 2
+
+
+class CustomerDeleteSerializer(ModelSerializer):
+
+    class Meta:
+        model = Customer
+        fields = ['id']
+
+
 class CreateUserSerializer(ModelSerializer):
+    '''
+    used in signUP
+    '''
     class Meta:
         model = User
         fields = ['email', 'username', 'password']
