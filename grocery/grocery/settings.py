@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
     'products.apps.ProductsConfig',
     'customer.apps.CustomerConfig',
+    'authentication.apps.AuthenticationConfig',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +65,7 @@ ROOT_URLCONF = 'grocery.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [ os.path.join( BASE_DIR, './Templates' ) ],
+        'DIRS': [os.path.join(BASE_DIR, './Templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
