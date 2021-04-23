@@ -5,9 +5,9 @@ from django.contrib.auth.models import User
 
 
 class Customer(models.Model):
-    profile = models.OneToOneField('CustomerProfile', on_delete=models.CASCADE)
-    address = models.OneToOneField(
-        'DeliveryAddress', on_delete=models.CASCADE, null=True, blank=True)
+    profile = models.OneToOneField(
+        'CustomerProfile', on_delete=models.CASCADE, default='')
+    address = models.ManyToManyField('DeliveryAddress',  blank=True)
 
     def __str__(self):
         return self.profile.user.username

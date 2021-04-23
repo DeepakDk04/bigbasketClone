@@ -10,7 +10,7 @@ class ProfileCreateSerializer(ModelSerializer):
 
     class Meta:
         model = CustomerProfile
-        fields = ['user', 'age', 'contactno']
+        fields = ['id', 'user', 'age', 'contactno']
 
 
 class userModelCustomSerializer(ModelSerializer):
@@ -37,41 +37,50 @@ class ProfileUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = CustomerProfile
-        fields = ['user', 'age', 'contactno']
+        fields = ['id', 'user', 'age', 'contactno']
+        read_only_fields = ('user',)
 
-    def update(self, instance, validated_data):
+    # def update(self, instance, validated_data):
 
-        user = validated_data.get("user", {})
+    #     user = validated_data.get("user", {})
 
-        username = user.get("username", False)
-        if not username:
-            username = instance.user.username
+    #     # serializer = userModelCustomSerializer(
+    #     #     instance.user, data=user, partial=True)
 
-        email = user.get("email", False)
-        if not email:
-            email = instance.user.email
+    #     # serializer.is_valid(raise_exception=True)
 
-        first_name = user.get("first_name", False)
-        if not first_name:
-            first_name = instance.user.first_name
+    #     # user = serializer.save()
 
-        last_name = user.get("last_name", False)
-        if not last_name:
-            last_name = instance.user.last_name
+    #     username = user.get("username", False)
+    #     if not username:
+    #         username = instance.user.username
 
-        instance.user.username = username
-        instance.user.email = email
-        instance.user.first_name = first_name
-        instance.user.last_name = last_name
+    #     email = user.get("email", False)
+    #     if not email:
+    #         email = instance.user.email
 
-        instance.age = validated_data.get("age", instance.age)
+    #     first_name = user.get("first_name", False)
+    #     if not first_name:
+    #         first_name = instance.user.first_name
 
-        instance.contactno = validated_data.get(
-            "contactno", instance.contactno)
+    #     last_name = user.get("last_name", False)
+    #     if not last_name:
+    #         last_name = instance.user.last_name
 
-        instance.save()
+    #     instance.user.username = username
+    #     instance.user.email = email
+    #     instance.user.first_name = first_name
+    #     instance.user.last_name = last_name
+    #     # instance.user = user
 
-        return instance
+    #     instance.age = validated_data.get("age", instance.age)
+
+    #     instance.contactno = validated_data.get(
+    #         "contactno", instance.contactno)
+
+    #     instance.save()
+
+    #     return instance
 
 
 class ProfileDeleteSerializer(ModelSerializer):
@@ -85,7 +94,7 @@ class AddressCreateOrViewOrUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = DeliveryAddress
-        fields = ['doorno', 'street', 'area', 'landmark']
+        fields = ['id', 'doorno', 'street', 'area', 'landmark']
 
 
 class AddressDeleteSerializer(ModelSerializer):
@@ -99,7 +108,7 @@ class CustomerCreateOrUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = ['profile', 'address']
+        fields = ['id', 'profile', 'address']
 
 
 class CustomerView__ProfileSerializer(ModelSerializer):

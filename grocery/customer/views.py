@@ -1,6 +1,7 @@
 
+from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .permissions import IsOwnerProfile, IsOwnerCustomer
+from .permissions import IsOwnerProfile, IsOwnerCustomer, IsOwnerUser
 
 
 from rest_framework.generics import (
@@ -20,6 +21,7 @@ from .serializers import (
 
     ProfileCreateSerializer,
     ProfileViewSerializer,
+    userModelCustomSerializer,
     ProfileUpdateSerializer,
     ProfileDeleteSerializer,
 
@@ -37,7 +39,7 @@ class CustomerProfileCreateView(CreateAPIView):
     '''
     queryset = CustomerProfile.objects.all()
     serializer_class = ProfileCreateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
 
 class CustomerProfileDetailView(RetrieveAPIView):
@@ -46,7 +48,17 @@ class CustomerProfileDetailView(RetrieveAPIView):
     '''
     queryset = CustomerProfile.objects.all()
     serializer_class = ProfileViewSerializer
-    permission_classes = [IsOwnerProfile]
+    permission_classes = (IsOwnerProfile,)
+    lookup_field = 'id'
+
+
+class UserUpdateView(UpdateAPIView):
+    '''
+    Updates the customer Profile
+    '''
+    queryset = User.objects.all()
+    serializer_class = userModelCustomSerializer
+    permission_classes = (IsOwnerUser, IsAuthenticated)
     lookup_field = 'id'
 
 
@@ -62,11 +74,12 @@ class CustomerProfileUpdateView(UpdateAPIView):
 
 class CustomerProfileDeleteView(DestroyAPIView):
     '''
-    Deletes the customer Profile
+    Deletes the customer Profile, 
+    Note: ( Bad Practice to delete a profile, better avoid, it affects customer table )
     '''
     queryset = CustomerProfile.objects.all()
     serializer_class = ProfileDeleteSerializer
-    permission_classes = [IsOwnerProfile]
+    permission_classes = (IsOwnerProfile,)
     lookup_field = 'id'
 
 
@@ -76,7 +89,7 @@ class AddressCreateView(CreateAPIView):
     '''
     queryset = DeliveryAddress.objects.all()
     serializer_class = AddressCreateOrViewOrUpdateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
 
 class AddressDetailView(RetrieveAPIView):
@@ -85,7 +98,7 @@ class AddressDetailView(RetrieveAPIView):
     '''
     queryset = DeliveryAddress.objects.all()
     serializer_class = AddressCreateOrViewOrUpdateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     lookup_field = 'id'
 
 
@@ -95,7 +108,7 @@ class AddressUpdateView(UpdateAPIView):
     '''
     queryset = DeliveryAddress.objects.all()
     serializer_class = AddressCreateOrViewOrUpdateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     lookup_field = 'id'
 
 
@@ -105,7 +118,7 @@ class AddressDeleteView(DestroyAPIView):
     '''
     queryset = DeliveryAddress.objects.all()
     serializer_class = AddressDeleteSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     lookup_field = 'id'
 
 
@@ -115,7 +128,7 @@ class CustomerCreateView(CreateAPIView):
     '''
     queryset = Customer.objects.all()
     serializer_class = CustomerCreateOrUpdateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
 
 class CustomerDetailView(RetrieveAPIView):
@@ -124,7 +137,7 @@ class CustomerDetailView(RetrieveAPIView):
     '''
     queryset = Customer.objects.all()
     serializer_class = CustomerViewSerializer
-    permission_classes = [IsOwnerCustomer]
+    permission_classes = (IsOwnerCustomer,)
     lookup_field = 'id'
 
 
@@ -134,7 +147,7 @@ class CustomerUpdateView(UpdateAPIView):
     '''
     queryset = Customer.objects.all()
     serializer_class = CustomerCreateOrUpdateSerializer
-    permission_classes = [IsOwnerCustomer]
+    permission_classes = (IsOwnerCustomer,)
     lookup_field = 'id'
 
 
@@ -144,5 +157,5 @@ class CustomerDeleteView(DestroyAPIView):
     '''
     queryset = Customer.objects.all()
     serializer_class = CustomerDeleteSerializer
-    permission_classes = [IsOwnerCustomer]
+    permission_classes = (IsOwnerCustomer,)
     lookup_field = 'id'

@@ -17,3 +17,12 @@ class IsOwnerCustomer(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.profile.user == request.user
+
+
+class IsOwnerUser(BasePermission):
+    """
+    Object-level permission to only allow owners of an object to access it.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.username == request.user.username
