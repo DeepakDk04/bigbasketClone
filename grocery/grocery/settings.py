@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'products.apps.ProductsConfig',
     'customer.apps.CustomerConfig',
     'authentication.apps.AuthenticationConfig',
+    'deliveryservice.apps.DeliveryserviceConfig',
 ]
 
 MIDDLEWARE = [
@@ -140,5 +141,5 @@ REST_FRAMEWORK = {
         'knox.auth.TokenAuthentication',
     ]
 
-    
+
 }
