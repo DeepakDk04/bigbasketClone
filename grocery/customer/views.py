@@ -68,7 +68,7 @@ class CustomerProfileUpdateView(UpdateAPIView):
     '''
     queryset = CustomerProfile.objects.all()
     serializer_class = ProfileUpdateSerializer
-    permission_classes = [IsOwnerProfile]
+    permission_classes = (IsOwnerProfile,)
     lookup_field = 'id'
 
 
