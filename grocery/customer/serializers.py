@@ -40,48 +40,6 @@ class ProfileUpdateSerializer(ModelSerializer):
         fields = ['id', 'user', 'age', 'contactno']
         read_only_fields = ('user',)
 
-    # def update(self, instance, validated_data):
-
-    #     user = validated_data.get("user", {})
-
-    #     # serializer = userModelCustomSerializer(
-    #     #     instance.user, data=user, partial=True)
-
-    #     # serializer.is_valid(raise_exception=True)
-
-    #     # user = serializer.save()
-
-    #     username = user.get("username", False)
-    #     if not username:
-    #         username = instance.user.username
-
-    #     email = user.get("email", False)
-    #     if not email:
-    #         email = instance.user.email
-
-    #     first_name = user.get("first_name", False)
-    #     if not first_name:
-    #         first_name = instance.user.first_name
-
-    #     last_name = user.get("last_name", False)
-    #     if not last_name:
-    #         last_name = instance.user.last_name
-
-    #     instance.user.username = username
-    #     instance.user.email = email
-    #     instance.user.first_name = first_name
-    #     instance.user.last_name = last_name
-    #     # instance.user = user
-
-    #     instance.age = validated_data.get("age", instance.age)
-
-    #     instance.contactno = validated_data.get(
-    #         "contactno", instance.contactno)
-
-    #     instance.save()
-
-    #     return instance
-
 
 class ProfileDeleteSerializer(ModelSerializer):
 
