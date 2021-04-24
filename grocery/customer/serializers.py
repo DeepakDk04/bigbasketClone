@@ -1,9 +1,8 @@
-from django.db import models
-from django.db.models import fields
+from rest_framework.serializers import ModelSerializer
+
+
 from .models import Customer, CustomerProfile, DeliveryAddress
 from django.contrib.auth.models import User
-
-from rest_framework.serializers import ModelSerializer
 
 
 class ProfileCreateSerializer(ModelSerializer):
