@@ -25,7 +25,7 @@ urlpatterns = [
     path('profil-create/', CustomerProfileCreateView.as_view()),
     path('profile-detail/<int:id>/', CustomerProfileDetailView.as_view()),
     
-    path('profile-user-update/<int:id>/', UserUpdateView.as_view()),
+    path('user-update/<int:id>/', UserUpdateView.as_view()),
     path('profile-update/<int:id>/', CustomerProfileUpdateView.as_view()),
     # when calling profile-update, profile-user-update must called before if user property changed
     
