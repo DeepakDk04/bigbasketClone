@@ -17,6 +17,9 @@ from .serializers import UserSerializer, RegisterSerializer
 
 
 class RegisterAPIView(GenericAPIView):
+    '''
+    Creates the user account in customer group (default)
+    '''
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
@@ -32,15 +35,16 @@ class RegisterAPIView(GenericAPIView):
 
 
 class LoginAPIView(KnoxLoginView):
-
+    '''
+    Login to the User Account
+    '''
     permission_classes = (AllowAny,)
 
     def get_post_response_data(self, request, token, instance):
         # UserSerializer = self.get_user_serializer_class()
-        UserSerializer = None
+        UserSerializer = UserSerializer
 
         data = {
-            'id': request.user.id,
             'expiry': self.format_expiry_datetime(instance.expiry),
             'token': token
         }
