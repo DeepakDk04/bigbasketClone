@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission
 
 
-class IsOwnerDeliverProfile(BasePermission):
+class IsOwnerDeliver(BasePermission):
     """
     Object-level permission to only allow owners of an object to access it.
     """
@@ -10,7 +10,7 @@ class IsOwnerDeliverProfile(BasePermission):
         return obj.profile.user == request.user
 
 
-class IsOwnerDeliver(BasePermission):
+class IsOwnerDeliverProfile(BasePermission):
     """
     Object-level permission to only allow owners of an object to access it.
     """
