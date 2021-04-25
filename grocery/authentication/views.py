@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from django.contrib.auth import login
+from django.contrib.auth.models import Group, User
 
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
@@ -22,6 +23,8 @@ class RegisterAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        group = Group.objects.get(name='Customer')
+        user.groups.add(group)
         return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
             "token": AuthToken.objects.create(user)[1]
@@ -29,9 +32,52 @@ class RegisterAPIView(GenericAPIView):
 
 
 class LoginAPIView(KnoxLoginView):
+
     permission_classes = (AllowAny,)
 
+    def get_post_response_data(self, request, token, instance):
+        # UserSerializer = self.get_user_serializer_class()
+        UserSerializer = None
+
+        data = {
+            'id': request.user.id,
+            'expiry': self.format_expiry_datetime(instance.expiry),
+            'token': token
+        }
+        if UserSerializer is not None:
+            data["user"] = UserSerializer(
+                request.user,
+                context=self.get_context()
+            ).data
+
+        userobj = User.objects.get(id=request.user.id)
+        if request.user.groups.filter(name="Customer").exists():
+            usertype = 'Customer'
+            account_id = userobj.customerprofile.customer.id
+
+        elif request.user.groups.filter(name="Deliveryservicer").exists():
+            usertype = 'Deliverservicer'
+            account_id = userobj.deliveryservicerprofile.deliveryservicer.id
+
+        elif request.user.groups.filter(name="Shopowner").exists():
+            usertype = 'Shopowner'
+            account_id = 0
+
+        else:
+            usertype = 'unknown'
+            account_id = 0
+
+        extra_data = {
+            'usertype': usertype,
+            'account_id': account_id,
+        }
+
+        data.update(extra_data)
+
+        return data
+
     def post(self, request, format=None):
+
         serializer = AuthTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']

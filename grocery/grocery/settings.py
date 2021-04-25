@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+from rest_framework.settings import api_settings
+from datetime import timedelta
 from pathlib import Path
 import environ
 import os
@@ -143,3 +145,17 @@ REST_FRAMEWORK = {
 
 
 }
+
+# ...snip...
+# These are the default values if none are set
+
+REST_KNOX = {
+    # 'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
+    # 'AUTH_TOKEN_CHARACTER_LENGTH': 64,
+    'TOKEN_TTL': timedelta(hours=10),
+    'USER_SERIALIZER': 'knox.serializers.UserSerializer',
+    'TOKEN_LIMIT_PER_USER': 100,
+    # 'AUTO_REFRESH': False,
+    # 'EXPIRY_DATETIME_FORMAT': api_settings.DATETME_FORMAT,
+}
+# ...snip...

@@ -1,13 +1,19 @@
+from django.contrib.auth.models import Group
 from .models import DeliveryServicer, DeliveryServicerProfile
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .permissions import IsOwnerDeliver, IsOwnerDeliverProfile
 
+from rest_framework.generics import GenericAPIView
 from rest_framework.generics import (
     CreateAPIView,
     RetrieveAPIView,
     UpdateAPIView,
 )
+
+from authentication.serializers import UserSerializer, RegisterSerializer
+from rest_framework.response import Response
+from knox.models import AuthToken
 
 from .serializers import (
 
@@ -22,6 +28,20 @@ from .serializers import (
 
 
 # Create your views here.
+class DeliverServicerSignUpAPIView(GenericAPIView):
+    serializer_class = RegisterSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        group = Group.objects.get(name='Deliveryservicer')
+        user.groups.add(group)
+        return Response({
+            "user": UserSerializer(user, context=self.get_serializer_context()).data,
+            "token": AuthToken.objects.create(user)[1]
+        })
+
 
 class DeliverServicerProfileCreateView(CreateAPIView):
     '''
