@@ -16,7 +16,7 @@ class DeliveryServicer(models.Model):
 
 
 class DeliveryServicerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, default='')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     age = models.IntegerField()
     contactno = models.CharField(max_length=10)
     # ordersTaken = models.ManyToManyField("Order", null=True)
