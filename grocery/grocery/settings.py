@@ -146,8 +146,6 @@ REST_FRAMEWORK = {
 
 }
 
-# ...snip...
-# These are the default values if none are set
 
 REST_KNOX = {
     # 'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
@@ -158,4 +156,3 @@ REST_KNOX = {
     # 'AUTO_REFRESH': False,
     # 'EXPIRY_DATETIME_FORMAT': api_settings.DATETME_FORMAT,
 }
-# ...snip...
