@@ -31,13 +31,6 @@ class DeliveryServicerProfileUpdateSerializer(ModelSerializer):
         depth = 1
 
 
-class DeliveryServicerCreateSerializer(ModelSerializer):
-
-    class Meta:
-        model = DeliveryServicer
-        fields = ('id', 'profile')
-
-
 class DeliveryServicer__ProfileSerializer(ModelSerializer):
 
     user = userModelCustomSerializer()
@@ -45,6 +38,13 @@ class DeliveryServicer__ProfileSerializer(ModelSerializer):
     class Meta:
         model = DeliveryServicerProfile
         fields = '__all__'
+
+
+class DeliveryServicerCreateSerializer(ModelSerializer):
+
+    class Meta:
+        model = DeliveryServicer
+        fields = ('id', 'profile')
 
 
 class DeliveryServicerDetailSerializer(ModelSerializer):
