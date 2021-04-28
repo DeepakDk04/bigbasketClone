@@ -1,3 +1,4 @@
+from order.models import Order
 from rest_framework.serializers import ModelSerializer
 
 
@@ -9,7 +10,7 @@ class ProfileCreateSerializer(ModelSerializer):
 
     class Meta:
         model = CustomerProfile
-        fields = ['id', 'user', 'age', 'contactno']
+        fields = ['id', 'user', 'age', 'gender', 'contactno']
 
 
 class userModelCustomSerializer(ModelSerializer):
@@ -26,7 +27,7 @@ class ProfileViewSerializer(ModelSerializer):
 
     class Meta:
         model = CustomerProfile
-        fields = ['id', 'user', 'age', 'contactno']
+        fields = ['id', 'user', 'age', 'gender', 'contactno']
         depth = 1
 
 
@@ -36,7 +37,7 @@ class ProfileUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = CustomerProfile
-        fields = ['id', 'user', 'age', 'contactno']
+        fields = ['id', 'user', 'age', 'gender', 'contactno']
         read_only_fields = ('user',)
 
 
@@ -65,7 +66,7 @@ class CustomerCreateOrUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = ['id', 'profile', 'address']
+        fields = ['id', 'profile', 'address', 'cart', 'myorders']
 
 
 class CustomerView__ProfileSerializer(ModelSerializer):
@@ -77,13 +78,21 @@ class CustomerView__ProfileSerializer(ModelSerializer):
         fields = '__all__'
 
 
+# class CustomerView__MyOrdersSerializer(ModelSerializer):
+
+#     class Meta:
+#         model = Order
+#         fields = ['id', ]
+
+
 class CustomerViewSerializer(ModelSerializer):
 
     profile = CustomerView__ProfileSerializer()
+    # myorders = CustomerView__MyOrdersSerializer()
 
     class Meta:
         model = Customer
-        fields = ['id', 'profile', 'address']
+        fields = ['id', 'profile', 'address', 'cart', 'myorders']
         depth = 2
 
 
