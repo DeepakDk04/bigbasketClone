@@ -2,7 +2,15 @@ from django.contrib.auth.models import Group
 from .models import DeliveryServicer, DeliveryServicerProfile
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .permissions import IsOwnerDeliver, IsOwnerDeliverProfile
+
+from .permissions import (
+
+    IsOwnerDeliver,
+    IsOwnerDeliverProfile,
+    IsDeliverGroup,
+    IsOrderedCustomer
+
+)
 
 from rest_framework.generics import GenericAPIView
 from rest_framework.generics import (
@@ -17,13 +25,16 @@ from knox.models import AuthToken
 
 from .serializers import (
 
-    DeliveryServicerProfileDetailSerializer,
+    # DeliveryServicerProfileDetailSerializer,
     DeliveryServicerProfileCreateSerializer,
     DeliveryServicerProfileUpdateSerializer,
 
     DeliveryServicerCreateSerializer,
     DeliveryServicerDetailSerializer,
-    DeliveryServicerUpdateSerializer,
+
+    DeliveryServicerRatingsUpdateSerializer,
+    DeliveryServicerDeliveryUpdateSerializer,
+    DeliverServicerAvailableUpdateSerializer,
 )
 
 
@@ -49,17 +60,17 @@ class DeliverServicerProfileCreateView(CreateAPIView):
     '''
     queryset = DeliveryServicerProfile.objects.all()
     serializer_class = DeliveryServicerProfileCreateSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsDeliverGroup)
 
 
-class DeliverServicerProfileDetailView(RetrieveAPIView):
-    '''
-    View Details of the Delivery Servicer Profile
-    '''
-    queryset = DeliveryServicerProfile.objects.all()
-    serializer_class = DeliveryServicerProfileDetailSerializer
-    permission_classes = (IsOwnerDeliverProfile,)
-    lookup_field = 'id'
+# class DeliverServicerProfileDetailView(RetrieveAPIView):
+#     '''
+#     View Details of the Delivery Servicer Profile
+#     '''
+#     queryset = DeliveryServicerProfile.objects.all()
+#     serializer_class = DeliveryServicerProfileDetailSerializer
+#     permission_classes = (IsOwnerDeliverProfile,)
+#     lookup_field = 'id'
 
 
 class DeliverServicerProfileUpdateView(UpdateAPIView):
@@ -78,7 +89,7 @@ class DeliverServicerCreateView(CreateAPIView):
     '''
     queryset = DeliveryServicer.objects.all()
     serializer_class = DeliveryServicerCreateSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsDeliverGroup)
 
 
 class DeliverServicerDetailView(RetrieveAPIView):
@@ -91,11 +102,34 @@ class DeliverServicerDetailView(RetrieveAPIView):
     lookup_field = 'id'
 
 
-class DeliverServicerUpdateView(UpdateAPIView):
+class DeliverServicerRatingsUpdateView(UpdateAPIView):
     '''
-    Update details of the Delivery Servicer Account
+    Put ratings for Delivery Servicer by the Customer
     '''
     queryset = DeliveryServicer.objects.all()
-    serializer_class = DeliveryServicerUpdateSerializer
+    serializer_class = DeliveryServicerRatingsUpdateSerializer
+    permission_classes = (IsAuthenticated, IsOrderedCustomer)
+    lookup_field = 'id'
+
+
+class DeliverServicerDeliveryUpdateView(UpdateAPIView):
+    '''
+    Update Delivery Status [placed->delivery->reached]
+    of Order by the deliveryshipper
+    '''
+    queryset = DeliveryServicer.objects.all()
+    serializer_class = DeliveryServicerDeliveryUpdateSerializer
+    permission_classes = (IsOwnerDeliver,)
+    lookup_field = 'id'
+
+
+class DeliverServicerAvailableUpdateView(UpdateAPIView):
+    '''
+    Update active status of DelivererAccount
+    by Deliverer Servicer himself
+    [Active Deliverers only Recieve Orders to deliver]
+    '''
+    queryset = DeliveryServicer.objects.all()
+    serializer_class = DeliverServicerAvailableUpdateSerializer
     permission_classes = (IsOwnerDeliver,)
     lookup_field = 'id'
