@@ -1,6 +1,9 @@
 
+from products.models import Product
+from order.models import Cart, CartItem
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from .permissions import IsOwnerProfile, IsOwnerCustomer, IsOwnerUser
 
 
@@ -130,6 +133,24 @@ class CustomerCreateView(CreateAPIView):
     serializer_class = CustomerCreateOrUpdateSerializer
     permission_classes = (IsAuthenticated,)
 
+    # def _createDummyCart(self):
+    #     dumyproduct = Product.objects.get(name="dummy")
+    #     dummyCartItem = CartItem.objects.create()
+    #     cart = Cart.objects.create()
+    #     cart.items.add(dummyCartItem)
+    #     return cart.id
+
+    def create(self, request, *args, **kwargs):
+
+        requestedData = request.data
+        emptycart = Cart.objects.create()
+        requestedData["cart"] = emptycart.id
+        serializer = self.get_serializer(data=requestedData)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
 
 class CustomerDetailView(RetrieveAPIView):
     '''
@@ -139,6 +160,16 @@ class CustomerDetailView(RetrieveAPIView):
     serializer_class = CustomerViewSerializer
     permission_classes = (IsOwnerCustomer,)
     lookup_field = 'id'
+
+    # def retrieve(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+
+    #     # dummyProduct = Product.objects.get(name="dummy")
+    #     # cart_Item = CartItem.objects.get(product=dummyProduct)
+    #     # instance.cart.items.remove(cart_Item)
+
+    #     serializer = self.get_serializer(instance)
+    #     return Response(serializer.data)
 
 
 class CustomerUpdateView(UpdateAPIView):
