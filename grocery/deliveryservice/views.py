@@ -11,7 +11,7 @@ from .permissions import (
     IsOrderedCustomer
 
 )
-
+from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.generics import (
     CreateAPIView,
@@ -90,6 +90,21 @@ class DeliverServicerCreateView(CreateAPIView):
     queryset = DeliveryServicer.objects.all()
     serializer_class = DeliveryServicerCreateSerializer
     permission_classes = (IsAuthenticated, IsDeliverGroup)
+
+    def create(self, request, *args, **kwargs):
+
+        profile_serializer = DeliveryServicerProfileCreateSerializer(
+            data=request.data)
+        profile_serializer.is_valid(raise_exception=True)
+        profile = profile_serializer.save()
+
+        profile_data = {"profile": profile.id}
+
+        deliverer_serializer = self.get_serializer(data=profile_data)
+        deliverer_serializer.is_valid(raise_exception=True)
+        deliverer_serializer.save()
+
+        return Response(deliverer_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class DeliverServicerDetailView(RetrieveAPIView):
