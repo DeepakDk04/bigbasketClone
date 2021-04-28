@@ -8,17 +8,17 @@ class DeliveryServicerProfileCreateSerializer(ModelSerializer):
 
     class Meta:
         model = DeliveryServicerProfile
-        fields = ('id', 'user', 'age', 'contactno')
+        fields = ('id', 'user', 'age', 'gender', 'contactno')
 
 
-class DeliveryServicerProfileDetailSerializer(ModelSerializer):
+# class DeliveryServicerProfileDetailSerializer(ModelSerializer):
 
-    user = userModelCustomSerializer()
+#     user = userModelCustomSerializer()
 
-    class Meta:
-        model = DeliveryServicerProfile
-        fields = ('id', 'user', 'age', 'contactno')
-        depth = 1
+#     class Meta:
+#         model = DeliveryServicerProfile
+#         fields = ('id', 'user', 'age', 'gender', 'contactno')
+#         depth = 1
 
 
 class DeliveryServicerProfileUpdateSerializer(ModelSerializer):
@@ -27,7 +27,7 @@ class DeliveryServicerProfileUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = DeliveryServicerProfile
-        fields = ('id', 'user', 'age', 'contactno')
+        fields = ('id', 'user', 'age', 'gender', 'contactno')
         depth = 1
 
 
@@ -35,7 +35,7 @@ class DeliveryServicerCreateSerializer(ModelSerializer):
 
     class Meta:
         model = DeliveryServicer
-        fields = ('id', 'profile', 'ratings')
+        fields = ('id', 'profile')
 
 
 class DeliveryServicer__ProfileSerializer(ModelSerializer):
@@ -53,12 +53,26 @@ class DeliveryServicerDetailSerializer(ModelSerializer):
 
     class Meta:
         model = DeliveryServicer
-        fields = ('id', 'profile', 'ratings')
+        fields = ('id', 'profile', 'ratings', 'mydeliveries')
         depth = 2
 
 
-class DeliveryServicerUpdateSerializer(ModelSerializer):
+class DeliveryServicerRatingsUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = DeliveryServicer
-        fields = ('id', 'profile', 'ratings')
+        fields = ('id', 'ratings')
+
+
+class DeliveryServicerDeliveryUpdateSerializer(ModelSerializer):
+
+    class Meta:
+        model = DeliveryServicer
+        fields = ('id', 'mydeliveries')
+
+
+class DeliverServicerAvailableUpdateSerializer(ModelSerializer):
+
+    class Meta:
+        model = DeliveryServicer
+        fields = ('id', 'available')
