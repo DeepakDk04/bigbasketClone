@@ -8,7 +8,8 @@ class Product(models.Model):
     category = models.ManyToManyField('Category')
     offer = models.ForeignKey(
         'Offer', on_delete=models.CASCADE, blank=True, null=True)
-    stockCount = models.IntegerField()
+    price = models.IntegerField(default=0)
+    stockCount = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -16,6 +17,7 @@ class Product(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
+    description = models.CharField(max_length=200, default='')
 
     def __str__(self):
         return self.name
