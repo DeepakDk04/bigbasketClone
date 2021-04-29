@@ -7,7 +7,7 @@ class IsOwnerProfile(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.user == request.user
+        return obj == request.user.customerprofile
 
 
 class IsOwnerCustomer(BasePermission):
@@ -16,7 +16,7 @@ class IsOwnerCustomer(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.profile.user == request.user
+        return obj == request.user.customerprofile.customer
 
 
 class IsOwnerUser(BasePermission):
@@ -25,4 +25,4 @@ class IsOwnerUser(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.username == request.user.username
+        return obj == request.user
