@@ -182,7 +182,7 @@ class OrderCreateAPTView(CreateAPIView):
         self._addOrderToCustomerAccount(order.orderbycustomer, order)
         self._addOrderToDeliverAccount(order.ordershipper, order)
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UpdateCartAPIView(UpdateAPIView):
@@ -203,17 +203,17 @@ class UpdateCartAPIView(UpdateAPIView):
 
         cart_items = data.get("items")
 
+        if not cart_items:
+            raise ValidationError({"field_error": {"items": "required field"}})
+
         allCartItems = customerCart.items.all()
         # customerCart.items.clear()
         # # clears the cartitems in user cart but not delete it
-        for oneCartItem in allCartItems:
-            customerCart.items.remove(oneCartItem)
-            oneCartItem.delete()
-            # deletes the unused cartitems
-
-        if not cart_items:
-            raise ValidationError({"field_error": {"items": "required field"}},
-                                  status=status.HTTP_400_BAD_REQUEST)
+        if allCartItems.exists():
+            for oneCartItem in allCartItems:
+                customerCart.items.remove(oneCartItem)
+                oneCartItem.delete()
+                # deletes the unused cartitems
 
         for cart_item in cart_items:
 
