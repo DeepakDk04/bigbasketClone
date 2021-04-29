@@ -1,7 +1,8 @@
-from order.models import Order
+from django.db.models import fields
+from order.models import Cart, CartItem, Order, OrderItem
 from rest_framework.serializers import ModelSerializer
 
-
+from products.models import Product
 from .models import Customer, CustomerProfile, DeliveryAddress
 from django.contrib.auth.models import User
 
@@ -78,17 +79,64 @@ class CustomerView__ProfileSerializer(ModelSerializer):
         fields = '__all__'
 
 
-# class CustomerView__MyOrdersSerializer(ModelSerializer):
+class CustomerView__MyOrders__Items__ProductSerializer(ModelSerializer):
 
-#     class Meta:
-#         model = Order
-#         fields = ['id', ]
+    class Meta:
+        model = Product
+        fields = ('name',)
+
+
+class CustomerView__MyOrders__ItemsSerializer(ModelSerializer):
+
+    product = CustomerView__MyOrders__Items__ProductSerializer()
+
+    class Meta:
+        model = OrderItem
+        exclude = ('id',)
+
+
+class CustomerView__MyOrdersSerializer(ModelSerializer):
+
+    items = CustomerView__MyOrders__ItemsSerializer(many=True)
+
+    class Meta:
+        model = Order
+        # fields = ['id', 'amount', 'status', 'placedon',
+        #           'ordershipper', 'toaddress', 'items']
+        exclude = ('id', 'orderbycustomer', 'toaddress')
+
+
+class CustomerView__Cart__Items__ProductSerializer(ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = ('name',)
+
+
+class CustomerView__Cart__ItemsSerializer(ModelSerializer):
+
+    product = CustomerView__Cart__Items__ProductSerializer()
+
+    class Meta:
+        model = CartItem
+        fields = "__all__"
+
+
+class CustomerView__CartSerializer(ModelSerializer):
+
+    items = CustomerView__Cart__ItemsSerializer(many=True)
+
+    class Meta:
+        model = Cart
+        fields = "__all__"
+        depth = 1
 
 
 class CustomerViewSerializer(ModelSerializer):
 
     profile = CustomerView__ProfileSerializer()
-    # myorders = CustomerView__MyOrdersSerializer()
+    myorders = CustomerView__MyOrdersSerializer(many=True)
+    cart = CustomerView__CartSerializer()
 
     class Meta:
         model = Customer
