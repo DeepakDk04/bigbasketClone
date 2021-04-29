@@ -13,7 +13,8 @@ from rest_framework.generics import (
     UpdateAPIView,
     DestroyAPIView,
 )
-
+from rest_framework.serializers import ValidationError
+from rest_framework import status
 from .models import Customer, CustomerProfile, DeliveryAddress
 
 from .serializers import (
@@ -36,13 +37,13 @@ from .serializers import (
 # Create your views here.
 
 
-class CustomerProfileCreateView(CreateAPIView):
-    '''
-    Creates the customer Profile
-    '''
-    queryset = CustomerProfile.objects.all()
-    serializer_class = ProfileCreateSerializer
-    permission_classes = (IsAuthenticated,)
+# class CustomerProfileCreateView(CreateAPIView):
+#     '''
+#     Creates the customer Profile
+#     '''
+#     queryset = CustomerProfile.objects.all()
+#     serializer_class = ProfileCreateSerializer
+#     permission_classes = (IsAuthenticated,)
 
 
 class CustomerProfileDetailView(RetrieveAPIView):
@@ -86,13 +87,13 @@ class CustomerProfileDeleteView(DestroyAPIView):
     lookup_field = 'id'
 
 
-class AddressCreateView(CreateAPIView):
-    '''
-    Creates the customer Address
-    '''
-    queryset = DeliveryAddress.objects.all()
-    serializer_class = AddressCreateOrViewOrUpdateSerializer
-    permission_classes = (IsAuthenticated,)
+# class AddressCreateView(CreateAPIView):
+#     '''
+#     Creates the customer Address
+#     '''
+#     queryset = DeliveryAddress.objects.all()
+#     serializer_class = AddressCreateOrViewOrUpdateSerializer
+#     permission_classes = (IsAuthenticated,)
 
 
 class AddressDetailView(RetrieveAPIView):
@@ -142,14 +143,39 @@ class CustomerCreateView(CreateAPIView):
 
     def create(self, request, *args, **kwargs):
 
-        requestedData = request.data
+        # acc = profile, address, cart, myorders
+        # profile = user, age, gender, contactno
+        # address = doorno, street, area, landmark
+
+        profileData = request.data.get("profile")
+        addressData = request.data.get("address")
+
+        if not profileData or not addressData:
+            raise ValidationError(
+                {"field_error": {"profile, address": "required fields"}})
+
+        profile_create_serializer = ProfileCreateSerializer(data=profileData)
+        profile_create_serializer.is_valid(raise_exception=True)
+        profile = profile_create_serializer.save()
+
+        address_create_serializer = AddressCreateOrViewOrUpdateSerializer(
+            data=addressData)
+        address_create_serializer.is_valid(raise_exception=True)
+        address = address_create_serializer.save()
+
         emptycart = Cart.objects.create()
-        requestedData["cart"] = emptycart.id
-        serializer = self.get_serializer(data=requestedData)
+
+        customerAccountData = {}
+        customerAccountData["profile"] = profile.id
+        # manytomany field expects list (adddres field)
+        customerAccountData["address"] = [address.id]
+        customerAccountData["cart"] = emptycart.id
+
+        serializer = self.get_serializer(data=customerAccountData)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CustomerDetailView(RetrieveAPIView):
