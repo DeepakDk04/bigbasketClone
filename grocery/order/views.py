@@ -13,6 +13,8 @@ from customer.models import Customer
 from .serializers import (
 
     OrderCreateSerializer,
+    OrderItemCreateSerializer,
+    OrderResponseDisplaySerializer,
     CartItemSerializer,
     CartUpdateSerializer,
     OrderStatusUpdateSerializer,
@@ -48,13 +50,12 @@ class OrderCreateAPTView(CreateAPIView):
         '''
         # product = Product.objects.get(id=product_id)
 
-        if product.stockCount - product_count > 0:
+        if product.stockCount - product_count >= 0:
             product.stockCount -= product_count
             product.save()
         else:
             # send_notification(Shopowner,, message={product:"outofstock"})
-            raise ValidationError({product.name: "out of stock "},
-                                  status=status.HTTP_404_NOT_FOUND)
+            raise ValidationError({product.name: "out of stock "})
 
     def _getOfferPrice(self, price, offerexpire, offerpercentage):
 
@@ -113,15 +114,17 @@ class OrderCreateAPTView(CreateAPIView):
                 {"deliveryservicer": "no delivery servicers are active right now"},
                 status=status.HTTP_404_NOT_FOUND)
 
-    def _clearcustomercart(self, order):
+    def _clearcustomercart(self, order, orderedCartItemsIds):
 
         # order.orderbycustomer.cart.items.clear()
         customerCartItems = order.orderbycustomer.cart.items
+
         customerCartItemsAll = customerCartItems.all()
 
-        for cartItems in customerCartItemsAll:
-            customerCartItems.remove(cartItems)
-            cartItems.delete()
+        for cartItem in customerCartItemsAll:
+            if cartItem.id in orderedCartItemsIds:
+                customerCartItems.remove(cartItem)
+                cartItem.delete()
 
     def _addOrderToCustomerAccount(self, customer, order):
 
@@ -143,9 +146,17 @@ class OrderCreateAPTView(CreateAPIView):
                     {"field_error": {"cart item": "Doesn't exist"}})
 
             item = CartItem.objects.get(id=item_id)
-            order_item = OrderItem.objects.create(
-                product=item.product, quantity=item.quantity)
-            order_items.append(order_item.id)
+            # order_item = OrderItem.objects.create(
+            #     product=item.product, quantity=item.quantity)
+            cart_itemdata = {'product': item.product.id,
+                             'quantity': item.quantity}
+
+            orderItem_Create_Serializer = OrderItemCreateSerializer(
+                data=cart_itemdata)
+            orderItem_Create_Serializer.is_valid(raise_exception=True)
+            order_item_instance = orderItem_Create_Serializer.save()
+
+            order_items.append(order_item_instance.id)
 
         return order_items
 
@@ -178,11 +189,14 @@ class OrderCreateAPTView(CreateAPIView):
 
         # send_notification(orderdeliverer, order)
 
-        self._clearcustomercart(order)
+        self._clearcustomercart(order, orderitems)
         self._addOrderToCustomerAccount(order.orderbycustomer, order)
         self._addOrderToDeliverAccount(order.ordershipper, order)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        orderResponse = OrderResponseDisplaySerializer(order).data
+
+        return Response(orderResponse, status=status.HTTP_201_CREATED)
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UpdateCartAPIView(UpdateAPIView):
