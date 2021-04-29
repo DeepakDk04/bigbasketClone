@@ -6,7 +6,7 @@ from .views import (
 
     DeliverServicerSignUpAPIView,
 
-    DeliverServicerProfileCreateView,
+#     DeliverServicerProfileCreateView,
     # DeliverServicerProfileDetailView,
     DeliverServicerProfileUpdateView,
 
@@ -21,7 +21,7 @@ from .views import (
 urlpatterns = [
 
     path('user-create/', DeliverServicerSignUpAPIView.as_view()),
-    path('servicer-profile/create/', DeliverServicerProfileCreateView.as_view()),
+#     path('servicer-profile/create/', DeliverServicerProfileCreateView.as_view()),
     path('servicer/create/', DeliverServicerCreateView.as_view()),
 
     # path('servicer-profile/detail/<int:id>/',

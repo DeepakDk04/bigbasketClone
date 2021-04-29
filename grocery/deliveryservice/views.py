@@ -40,7 +40,9 @@ from .serializers import (
 
 # Create your views here.
 class DeliverServicerSignUpAPIView(GenericAPIView):
+
     serializer_class = RegisterSerializer
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -54,13 +56,13 @@ class DeliverServicerSignUpAPIView(GenericAPIView):
         })
 
 
-class DeliverServicerProfileCreateView(CreateAPIView):
-    '''
-    Creates the Delivery Servicer Profile
-    '''
-    queryset = DeliveryServicerProfile.objects.all()
-    serializer_class = DeliveryServicerProfileCreateSerializer
-    permission_classes = (IsAuthenticated, IsDeliverGroup)
+# class DeliverServicerProfileCreateView(CreateAPIView):
+#     '''
+#     Creates the Delivery Servicer Profile
+#     '''
+#     queryset = DeliveryServicerProfile.objects.all()
+#     serializer_class = DeliveryServicerProfileCreateSerializer
+#     permission_classes = (IsAuthenticated, IsDeliverGroup)
 
 
 # class DeliverServicerProfileDetailView(RetrieveAPIView):
