@@ -134,12 +134,6 @@ class CustomerCreateView(CreateAPIView):
     serializer_class = CustomerCreateOrUpdateSerializer
     permission_classes = (IsAuthenticated,)
 
-    # def _createDummyCart(self):
-    #     dumyproduct = Product.objects.get(name="dummy")
-    #     dummyCartItem = CartItem.objects.create()
-    #     cart = Cart.objects.create()
-    #     cart.items.add(dummyCartItem)
-    #     return cart.id
 
     def create(self, request, *args, **kwargs):
 
@@ -187,15 +181,7 @@ class CustomerDetailView(RetrieveAPIView):
     permission_classes = (IsOwnerCustomer,)
     lookup_field = 'id'
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     instance = self.get_object()
 
-    #     # dummyProduct = Product.objects.get(name="dummy")
-    #     # cart_Item = CartItem.objects.get(product=dummyProduct)
-    #     # instance.cart.items.remove(cart_Item)
-
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data)
 
 
 class CustomerUpdateView(UpdateAPIView):
