@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
     'deliveryservice.apps.DeliveryserviceConfig',
     'order.apps.OrderConfig',
+    'shopowner.apps.ShopownerConfig',
 ]
 
 MIDDLEWARE = [
