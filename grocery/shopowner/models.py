@@ -11,3 +11,9 @@ class ShopOwner(models.Model):
 
 class JoinCode(models.Model):
     code = models.CharField(max_length=10, unique=True)
+    createdby = models.ForeignKey(
+        'ShopOwner', on_delete=models.SET_NULL, null=True, related_name="createdby")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+    joiner = models.ForeignKey(
+        'ShopOwner', on_delete=models.SET_NULL, blank=True, null=True, related_name="joiner")
