@@ -38,9 +38,12 @@ class IsOrderedCustomer(BasePermission):
     def has_object_permission(self, request, view, obj):
 
         deliveries = obj.mydeliveries.all()
+        customer = request.user.customerprofile.customer
 
-        for order in deliveries:
-            if order.orderbycustomer == request.user.customerprofile.customer:
-                return True
+        return deliveries.filter(orderbycustomer=customer).exists()
 
-        return False
+        # for order in deliveries:
+        #     if order.orderbycustomer == request.user.customerprofile.customer:
+        #         return True
+
+        # return False
