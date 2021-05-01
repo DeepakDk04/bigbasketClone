@@ -1,6 +1,6 @@
 from django.urls import path
 
-from customer.views import UserUpdateView
+# from customer.views import UserUpdateView
 
 from .views import (
 
@@ -11,9 +11,9 @@ from .views import (
     DeliverServicerDetailView,
     DeliverServicerUpdateView,
     DeliverServicerRatingsUpdateView,
-    
+
     DeliverServicerAvailableUpdateView,
-    CheckOrderGiven,
+    CheckOrderGivenView,
 
 )
 
@@ -24,7 +24,8 @@ urlpatterns = [
 
     path('servicer/detail/<int:id>/', DeliverServicerDetailView.as_view()),
 
-    path('user-update/<int:id>/', UserUpdateView.as_view()),
+    # path('user-update/<int:id>/', UserUpdateView.as_view()),
+    path('servicer/update/<int:id>/', DeliverServicerUpdateView.as_view()),
 
 
     path('servicer/update-ratings/<int:id>/',
@@ -33,7 +34,6 @@ urlpatterns = [
     path('servicer/update-available/<int:id>/',
          DeliverServicerAvailableUpdateView.as_view()),
 
-    path('servicer/update/<int:id>/', DeliverServicerUpdateView.as_view()),
-    path('servicer/check-order-given/<int:id>/', CheckOrderGiven.as_view()),
+    path('servicer/check-order-given/<int:id>/', CheckOrderGivenView.as_view()),
 
 ]

@@ -58,14 +58,14 @@ from .serializers import (
 #     lookup_field = 'id'
 
 
-class UserUpdateView(UpdateAPIView):
-    '''
-    Updates the customer Profile
-    '''
-    queryset = User.objects.all()
-    serializer_class = userModelCustomSerializer
-    permission_classes = (IsOwnerUser, IsAuthenticated)
-    lookup_field = 'id'
+# class UserUpdateView(UpdateAPIView):
+#     '''
+#     Updates the customer Profile
+#     '''
+#     queryset = User.objects.all()
+#     serializer_class = userModelCustomSerializer
+#     permission_classes = (IsOwnerUser, IsAuthenticated)
+#     lookup_field = 'id'
 
 
 # class CustomerProfileUpdateView(UpdateAPIView):

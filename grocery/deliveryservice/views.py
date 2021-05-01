@@ -29,7 +29,7 @@ from customer.serializers import userModelCustomSerializer
 
 from .serializers import (
 
-    
+
     DeliveryServicerProfileCreateSerializer,
     DeliveryServicerProfileUpdateSerializer,
     DeliveryServicerUpdateSerializer,
@@ -38,7 +38,7 @@ from .serializers import (
     DeliveryServicerDetailSerializer,
 
     DeliveryServicerRatingsUpdateSerializer,
-    
+
     DeliverServicerAvailableUpdateSerializer,
     CheckOrderGiven__OrderSerializer,
 
@@ -61,8 +61,6 @@ class DeliverServicerSignUpAPIView(GenericAPIView):
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
             "token": AuthToken.objects.create(user)[1]
         })
-
-
 
 
 class DeliverServicerCreateView(CreateAPIView):
@@ -192,7 +190,6 @@ class DeliverServicerRatingsUpdateView(UpdateAPIView):
         return Response(data={"status": "updated successfully"}, status=status.HTTP_202_ACCEPTED)
 
 
-
 class DeliverServicerAvailableUpdateView(UpdateAPIView):
     '''
     Update active status of DelivererAccount
@@ -205,7 +202,7 @@ class DeliverServicerAvailableUpdateView(UpdateAPIView):
     lookup_field = 'id'
 
 
-class CheckOrderGiven(RetrieveAPIView):
+class CheckOrderGivenView(RetrieveAPIView):
     '''
     Checks If any order placed for the respective deliverer
     '''
