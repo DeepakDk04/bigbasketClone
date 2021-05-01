@@ -306,7 +306,7 @@ class CustomerPlacedOrdersProgressView(RetrieveAPIView):
     lookup_field = 'id'
 
     def get(self, request, *args, **kwargs):
-
+        ''' get the orders either in placed status or delivery status '''
         customer = self.get_object()
         allorders = customer.myorders.all()
         orders = allorders.exclude(status="reached").exclude(
