@@ -21,7 +21,7 @@ from .serializers import (
 
 )
 from rest_framework import status
-from rest_framework.serializers import ValidationError
+
 
 from rest_framework.generics import (
     CreateAPIView,
@@ -48,14 +48,13 @@ class OrderCreateAPTView(CreateAPIView):
         '''
         Deduct Product Stock From Database for order
         '''
-        # product = Product.objects.get(id=product_id)
-
         if product.stockCount - product_count >= 0:
             product.stockCount -= product_count
             product.save()
         else:
-            # send_notification(Shopowner,, message={product:"outofstock"})
-            raise ValidationError({product.name: "out of stock "})
+            # send_notification(Shopowner, message={product:"outofstock"})
+            errorMessage = {product.name: "out of stock "}
+            return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
 
     def _getOfferPrice(self, price, offerexpire, offerpercentage):
 
@@ -75,8 +74,8 @@ class OrderCreateAPTView(CreateAPIView):
         for item_id in items:
 
             if not CartItem.objects.filter(id=item_id).exists():
-                raise ValidationError(
-                    {"field_error": {"cart item": "Doesn't exist"}})
+                errorMessage = {"field_error": {"cart item": "Doesn't exist"}}
+                return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
 
             item = CartItem.objects.get(id=item_id)
             product = item.product
@@ -110,9 +109,9 @@ class OrderCreateAPTView(CreateAPIView):
             deliverer_id = availableDeliverer.first().id
             return deliverer_id
         else:
-            raise ValidationError(
-                {"deliveryservicer": "no delivery servicers are active right now"},
-                status=status.HTTP_404_NOT_FOUND)
+            errorMessage = {
+                "deliveryservicer": "no delivery servicers are active right now"}
+            return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
 
     def _clearcustomercart(self, order, orderedCartItemsIds):
 
@@ -128,12 +127,10 @@ class OrderCreateAPTView(CreateAPIView):
 
     def _addOrderToCustomerAccount(self, customer, order):
 
-        # customer = Customer.objects.get(id=customer_id)
         customer.myorders.add(order)
 
     def _addOrderToDeliverAccount(self, deliverer, order):
 
-        # deliverer = DeliveryServicer.objects.get(id=deliverer_id)
         deliverer.mydeliveries.add(order)
 
     def _createOrderedItemsFromCartItems(self, items):
@@ -142,12 +139,10 @@ class OrderCreateAPTView(CreateAPIView):
         for item_id in items:
 
             if not CartItem.objects.filter(id=item_id).exists():
-                raise ValidationError(
-                    {"field_error": {"cart item": "Doesn't exist"}})
+                errorMessage = {"field_error": {"cart item": "Doesn't exist"}}
+                return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
 
             item = CartItem.objects.get(id=item_id)
-            # order_item = OrderItem.objects.create(
-            #     product=item.product, quantity=item.quantity)
             cart_itemdata = {'product': item.product.id,
                              'quantity': item.quantity}
 
@@ -167,7 +162,7 @@ class OrderCreateAPTView(CreateAPIView):
     def create(self, request, *args, **kwargs):
 
         requestedData = request.data
-        orderitems = [item for item in requestedData["items"]]
+        orderitems = requestedData["items"]
 
         totalPrice = self._calculateTotalBillAmount(orderitems)
         requestedData["amount"] = totalPrice
@@ -196,7 +191,6 @@ class OrderCreateAPTView(CreateAPIView):
         orderResponse = OrderResponseDisplaySerializer(order).data
 
         return Response(orderResponse, status=status.HTTP_201_CREATED)
-        # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UpdateCartAPIView(UpdateAPIView):
@@ -218,7 +212,8 @@ class UpdateCartAPIView(UpdateAPIView):
         cart_items = data.get("items")
 
         if not cart_items:
-            raise ValidationError({"field_error": {"items": "required field"}})
+            errorMessage = {{"field_error": {"items": "required field"}}}
+            return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
 
         allCartItems = customerCart.items.all()
         # customerCart.items.clear()
@@ -226,15 +221,14 @@ class UpdateCartAPIView(UpdateAPIView):
         if allCartItems.exists():
             for oneCartItem in allCartItems:
                 customerCart.items.remove(oneCartItem)
-                oneCartItem.delete()
                 # deletes the unused cartitems
+                oneCartItem.delete()
 
         for cart_item in cart_items:
 
             if cart_item.get("quantity") < 1:
-                raise ValidationError(
-                    {"value_error": {"quantity": "atleast 1"}},
-                    status=status.HTTP_406_NOT_ACCEPTABLE)
+                errorMessage = {"value_error": {"quantity": "atleast 1"}}
+                return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
 
             cart_item_serializer = CartItemSerializer(data=cart_item)
             cart_item_serializer.is_valid(raise_exception=True)
@@ -255,3 +249,12 @@ class OrderStatusUpdateAPIView(UpdateAPIView):
     serializer_class = OrderStatusUpdateSerializer
     permission_classes = (IsAuthenticated, IsOrderShipper)
     lookup_field = "id"
+
+    def update(self, request, *args, **kwargs):
+        ''' Status once reached final stage, it must not overwrited '''
+        order = self.get_object()
+        if order.status in ('reached', 'cancelled'):
+            errorMessage = {"status": "can't update further"}
+            return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
+
+        return super(OrderStatusUpdateAPIView, self).update(request, *args, **kwargs)
