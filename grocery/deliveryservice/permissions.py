@@ -7,7 +7,7 @@ class IsOwnerDeliver(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.profile.user == request.user
+        return obj == request.user.deliveryservicerprofile.deliveryservicer
 
 
 class IsOwnerDeliverProfile(BasePermission):
@@ -16,7 +16,7 @@ class IsOwnerDeliverProfile(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.user == request.user
+        return obj == request.user.deliveryservicerprofile
 
 
 class IsDeliverGroup(BasePermission):
@@ -37,10 +37,10 @@ class IsOrderedCustomer(BasePermission):
 
     def has_object_permission(self, request, view, obj):
 
-        deliveries = list(obj.mydeliveries.all())
+        deliveries = obj.mydeliveries.all()
 
         for order in deliveries:
-            if order.orderbycustomer.profile.user == request.user:
+            if order.orderbycustomer == request.user.customerprofile.customer:
                 return True
 
         return False
