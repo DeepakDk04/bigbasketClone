@@ -1,3 +1,5 @@
+from order.models import Order
+from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from .models import DeliveryServicer, DeliveryServicerProfile
 
@@ -23,18 +25,23 @@ from authentication.serializers import UserSerializer, RegisterSerializer
 from rest_framework.response import Response
 from knox.models import AuthToken
 
+from customer.serializers import userModelCustomSerializer
+
 from .serializers import (
 
-    # DeliveryServicerProfileDetailSerializer,
+    
     DeliveryServicerProfileCreateSerializer,
     DeliveryServicerProfileUpdateSerializer,
+    DeliveryServicerUpdateSerializer,
 
     DeliveryServicerCreateSerializer,
     DeliveryServicerDetailSerializer,
 
     DeliveryServicerRatingsUpdateSerializer,
-    DeliveryServicerDeliveryUpdateSerializer,
+    
     DeliverServicerAvailableUpdateSerializer,
+    CheckOrderGiven__OrderSerializer,
+
 )
 
 
@@ -56,33 +63,6 @@ class DeliverServicerSignUpAPIView(GenericAPIView):
         })
 
 
-# class DeliverServicerProfileCreateView(CreateAPIView):
-#     '''
-#     Creates the Delivery Servicer Profile
-#     '''
-#     queryset = DeliveryServicerProfile.objects.all()
-#     serializer_class = DeliveryServicerProfileCreateSerializer
-#     permission_classes = (IsAuthenticated, IsDeliverGroup)
-
-
-# class DeliverServicerProfileDetailView(RetrieveAPIView):
-#     '''
-#     View Details of the Delivery Servicer Profile
-#     '''
-#     queryset = DeliveryServicerProfile.objects.all()
-#     serializer_class = DeliveryServicerProfileDetailSerializer
-#     permission_classes = (IsOwnerDeliverProfile,)
-#     lookup_field = 'id'
-
-
-class DeliverServicerProfileUpdateView(UpdateAPIView):
-    '''
-    Update Details of the Delivery Servicer Profile
-    '''
-    queryset = DeliveryServicerProfile.objects.all()
-    serializer_class = DeliveryServicerProfileUpdateSerializer
-    permission_classes = (IsOwnerDeliverProfile,)
-    lookup_field = 'id'
 
 
 class DeliverServicerCreateView(CreateAPIView):
@@ -104,9 +84,12 @@ class DeliverServicerCreateView(CreateAPIView):
 
         deliverer_serializer = self.get_serializer(data=profile_data)
         deliverer_serializer.is_valid(raise_exception=True)
-        deliverer_serializer.save()
+        deliveryServicer = deliverer_serializer.save()
 
-        return Response(deliverer_serializer.data, status=status.HTTP_201_CREATED)
+        deliverer_response = DeliveryServicerDetailSerializer(
+            deliveryServicer).data
+
+        return Response(deliverer_response, status=status.HTTP_201_CREATED)
 
 
 class DeliverServicerDetailView(RetrieveAPIView):
@@ -119,25 +102,95 @@ class DeliverServicerDetailView(RetrieveAPIView):
     lookup_field = 'id'
 
 
+class DeliverServicerUpdateView(UpdateAPIView):
+    '''
+    Update Details of the Delivery Servicer Profile
+    '''
+    queryset = DeliveryServicer.objects.all()
+    serializer_class = DeliveryServicerUpdateSerializer
+    permission_classes = (IsOwnerDeliver,)
+    lookup_field = 'id'
+
+    def update(self, request, *args, **kwargs):
+        """ 
+        Overrided Update() method for nested [Profile, User] updates.
+        """
+
+        deliverer = self.get_object()
+        deliverer_update_serializer = self.get_serializer_class()
+
+        profile_data = request.data.get("profile", False)
+
+        if profile_data:
+            ''' Handles Updates of DeliveryServicer Profile instance '''
+
+            user_data = profile_data.get("user", False)
+
+            if user_data:
+                ''' Handles Updates of user instance '''
+                user_instance = deliverer.profile.user
+                old_username = user_instance.username
+                new_username = user_data.get('username', False)
+
+                if new_username:
+                    if User.objects.exclude(username=old_username).filter(username=new_username).exists():
+                        errorMessage = {"username": "not available"}
+                        return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
+
+                    if new_username == user_instance.username:
+                        ''' Since same username can't be saved anothertime, violates unique property '''
+                        user_data.pop("username")
+
+                user_serializer = userModelCustomSerializer(
+                    user_instance, data=user_data, partial=True)
+
+                user_serializer.is_valid(raise_exception=True)
+                user_serializer.save()
+                #  if "user" remains in request, it clashes when profile updating
+                profile_data.pop("user")
+
+            if profile_data:
+                ''' Handles Updates of profile instance other than user attribute'''
+                profile_instance = deliverer.profile
+                profile_serializer = DeliveryServicerProfileUpdateSerializer(
+                    profile_instance, data=profile_data, partial=True)
+
+                profile_serializer.is_valid(raise_exception=True)
+                profile_serializer.save()
+
+        deliverrer_response = deliverer_update_serializer(deliverer).data
+
+        return Response(deliverrer_response, status=status.HTTP_202_ACCEPTED)
+
+
 class DeliverServicerRatingsUpdateView(UpdateAPIView):
     '''
-    Put ratings for Delivery Servicer by the Customer
+    Put ratings for Delivery Servicer by the Ordered Customer
     '''
     queryset = DeliveryServicer.objects.all()
     serializer_class = DeliveryServicerRatingsUpdateSerializer
     permission_classes = (IsAuthenticated, IsOrderedCustomer)
     lookup_field = 'id'
 
+    def update(self, request, *args, **kwargs):
 
-class DeliverServicerDeliveryUpdateView(UpdateAPIView):
-    '''
-    Update Delivery Status [placed->delivery->reached]
-    of Order by the deliveryshipper
-    '''
-    queryset = DeliveryServicer.objects.all()
-    serializer_class = DeliveryServicerDeliveryUpdateSerializer
-    permission_classes = (IsOwnerDeliver,)
-    lookup_field = 'id'
+        reqRating = request.data.get("ratings")
+
+        if reqRating not in [0, 1, 2, 3, 4, 5]:
+            errorMessage = {"status": "must be a number from 0 to 5"}
+            return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
+
+        deliverer = self.get_object()
+        oldRating = deliverer.ratings
+        newRating = (reqRating + oldRating) // 2
+        updatedData = {"ratings": newRating}
+        serializer = self.get_serializer_class()
+        serializer(deliverer, data=updatedData, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(data={"status": "updated successfully"}, status=status.HTTP_202_ACCEPTED)
+
 
 
 class DeliverServicerAvailableUpdateView(UpdateAPIView):
@@ -150,3 +203,25 @@ class DeliverServicerAvailableUpdateView(UpdateAPIView):
     serializer_class = DeliverServicerAvailableUpdateSerializer
     permission_classes = (IsOwnerDeliver,)
     lookup_field = 'id'
+
+
+class CheckOrderGiven(RetrieveAPIView):
+    '''
+    Checks If any order placed for the respective deliverer
+    '''
+    queryset = DeliveryServicer.objects.all()
+    serializer_class = CheckOrderGiven__OrderSerializer
+    permission_classes = (IsOwnerDeliver,)
+    lookup_field = 'id'
+
+    def get(self, request, *args, **kwargs):
+        ''' get the placed orders '''
+        deliverer = self.get_object()
+        new_orders = deliverer.mydeliveries.all().filter(status="placed")
+
+        if new_orders.exists():
+            order_response = self.get_serializer(new_orders, many=True).data
+            return Response(order_response, status=status.HTTP_200_OK)
+        else:
+            message = {"order": "no order placed"}
+            return Response(data=message, status=status.HTTP_204_NO_CONTENT)
