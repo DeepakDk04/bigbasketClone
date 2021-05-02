@@ -19,3 +19,12 @@ class IsOwnerDetail(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj == request.user.shopowner
+
+
+class IsOwnerJoinCode(BasePermission):
+    """
+    Only the owner who generated the joincode can make invalidate it.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.createdby == request.user.shopowner
