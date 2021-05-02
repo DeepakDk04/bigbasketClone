@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from shopowner.models import ShopOwner
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
+from rest_framework.generics import DestroyAPIView, ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAdminUser
 
@@ -10,8 +10,9 @@ from authentication.serializers import RegisterSerializer, UserSerializer
 from knox.models import AuthToken
 
 from .models import JoinCode
+from products.models import Product, Offer, Category
 
-from .permissions import IsOwnerGroup, IsOwnerDetail
+from .permissions import IsOwnerGroup, IsOwnerDetail, IsOwnerJoinCode
 from rest_framework import status
 
 from .serializers import (
@@ -20,6 +21,18 @@ from .serializers import (
     JoinCodeCreateSerializer,
     JoinCodeDetailSerializer,
     ShopOwnerDetailSerializer,
+
+    AddProductSerializer,
+    AddCategorySerializer,
+    AddOfferSerializer,
+
+    UpdateProductSerializer,
+    UpdateCategorySerializer,
+    UpdateOfferSerializer,
+
+    ProductAdminViewSerializer,
+    CategoryAdminViewSerializer,
+    OfferAdminViewSerializer,
 
 )
 
@@ -34,7 +47,7 @@ class ShopOwnerSignUpAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
 
     def _isJoinCodeValid(self, joincode):
-
+        ''' Check if the joincode is valid  '''
         if JoinCode.objects.filter(code=joincode).exists():
             JoinerCode = JoinCode.objects.get(code=joincode)
             if not JoinerCode.used:
@@ -42,7 +55,7 @@ class ShopOwnerSignUpAPIView(GenericAPIView):
         return False
 
     def _addJoinerInJoinCodeInstance(self, joincode, joiner):
-
+        ''' The joiner will be saved with the joincode instance   '''
         JoinCodeInstance = JoinCode.objects.get(code=joincode)
 
         JoinCodeInstance.joiner = joiner
@@ -52,7 +65,7 @@ class ShopOwnerSignUpAPIView(GenericAPIView):
         # send_notification(JoinCodeInstance.createdby, joiner, message="1 new user joined using your code")
 
     def post(self, request, *args, **kwargs):
-
+        '''  Overrided method for nested writes  '''
         joincode = request.data.get("joincode", False)
 
         if not joincode:
@@ -103,12 +116,13 @@ class ShopOwnerSignUpAPIView(GenericAPIView):
 
 
 class GetJoinCodeAPIView(RetrieveAPIView):
-
+    ''' Get the joincode, To join in a admin group  '''
     queryset = JoinCode.objects.all()
     serializer_class = JoinCodeCreateSerializer
     permission_classes = (IsOwnerGroup,)
 
     def _generateUniqueJoinCode(self):
+        '''  Get unique code '''
         import random
         import string
 
@@ -137,7 +151,11 @@ class GetJoinCodeAPIView(RetrieveAPIView):
         return newCode
 
     def get(self, request, *args, **kwargs):
-
+        ''' 
+        didn't allow to generate newcode ,if a joincode is generated already
+        Returns existing joincode for the requested admin,
+        if all codes were used for joining, generated and return new code
+        '''
         shopowner = request.user.shopowner
 
         unUsedJoinCode = JoinCode.objects.filter(
@@ -162,8 +180,135 @@ class GetJoinCodeAPIView(RetrieveAPIView):
         return Response(joinCodeDetail, status=status.status.HTTP_200_OK)
 
 
-class ShopOwnerDetailAPIView(RetrieveAPIView):
+class CancelJoinCodeAPIView(DestroyAPIView):
+    ''' Invalidate the Existing Joincode, no can can join using it later '''
+    queryset = JoinCode.objects.all()
+    permission_classes = (IsOwnerJoinCode, )
+    lookup_field = 'joincode'
 
+    def delete(self, request, *args, **kwargs):
+
+        JoinCodeInstance = self.get_object()
+
+        if JoinCodeInstance.used:
+            joiner = ShopOwnerDetailSerializer(JoinCodeInstance.joiner).data
+            message = {"detail": {
+                "already joined with the code": joiner}}
+            return Response(data=message, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        return super().delete(request, *args, **kwargs)
+
+
+class ShopOwnerDetailAPIView(RetrieveAPIView):
+    '''
+    Get Detail of Shopowner Account
+    '''
     queryset = ShopOwner.objects.all()
-    serializer_class = ShopOwnerDetailSerializer()
+    serializer_class = ShopOwnerDetailSerializer
     permission_classes = (IsOwnerDetail, )
+    lookup_field = 'id'
+
+
+class AddProductAPIView(CreateAPIView):
+    ''' Add New Products to the database  '''
+    queryset = Product.objects.all()
+    serializer_class = AddProductSerializer
+    permission_classes = (IsOwnerGroup, )
+
+
+class AddCategoryAPIView(CreateAPIView):
+    ''' Add new Category to the database '''
+    queryset = Category.objects.all()
+    serializer_class = AddCategorySerializer
+    permission_classes = (IsOwnerGroup, )
+
+
+class AddOfferAPIView(CreateAPIView):
+    ''' Add new Offer to the database '''
+    queryset = Offer.objects.all()
+    serializer_class = AddOfferSerializer
+    permission_classes = (IsOwnerGroup, )
+
+
+class UpdateProductAPIView(UpdateAPIView):
+    ''' Update New Products to the database  '''
+    queryset = Product.objects.all()
+    serializer_class = UpdateProductSerializer
+    permission_classes = (IsOwnerGroup, )
+    lookup_field = 'id'
+
+    def update(self, request, *args, **kwargs):
+        product_instance = self.get_object()
+
+        product_serializer = self.get_serializer(
+            product_instance, data=request.data, partial=True)
+        product_serializer.is_valid(raise_exception=True)
+
+        product_serializer.save()
+
+        successMesage = {"product": "updated successfully"}
+        return Response(data=successMesage, status=status.HTTP_200_OK)
+
+
+class UpdateCategoryAPIView(UpdateAPIView):
+    ''' Update new Category to the database '''
+    queryset = Category.objects.all()
+    serializer_class = UpdateCategorySerializer
+    permission_classes = (IsOwnerGroup, )
+    lookup_field = 'id'
+
+    def update(self, request, *args, **kwargs):
+        category_instance = self.get_object()
+
+        category_serializer = self.get_serializer(
+            category_instance, data=request.data, partial=True)
+        category_serializer.is_valid(raise_exception=True)
+
+        category_serializer.save()
+
+        successMesage = {"category": "updated successfully"}
+        return Response(data=successMesage, status=status.HTTP_200_OK)
+
+
+class UpdateOfferAPIView(UpdateAPIView):
+    ''' Update new Offer to the database '''
+    queryset = Offer.objects.all()
+    serializer_class = UpdateOfferSerializer
+    permission_classes = (IsOwnerGroup, )
+    lookup_field = 'id'
+
+    def update(self, request, *args, **kwargs):
+        offer_instance = self.get_object()
+
+        offer_serializer = self.get_serializer(
+            offer_instance, data=request.data, partial=True)
+        offer_serializer.is_valid(raise_exception=True)
+
+        offer_serializer.save()
+
+        successMesage = {"offer": "updated successfully"}
+        return Response(data=successMesage, status=status.HTTP_200_OK)
+
+
+class DashBoardView(GenericAPIView):
+    ''' Get details for the dashboard '''
+    permission_classes = (IsOwnerGroup, )
+
+    def get(self, request, *args, **kwargs):
+
+        allProducts = Product.objects.all()
+        allCategories = Category.objects.all()
+        allOffers = Offer.objects.all()
+
+        productData = ProductAdminViewSerializer(allProducts, many=True).data
+        categoryData = CategoryAdminViewSerializer(
+            allCategories, many=True).data
+        OfferData = OfferAdminViewSerializer(allOffers, many=True).data
+
+        allData = {
+            "products": productData,
+            "categories": categoryData,
+            "offers": OfferData
+        }
+
+        return Response(data=allData, status=status.HTTP_200_OK)
