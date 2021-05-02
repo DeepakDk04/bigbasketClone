@@ -8,6 +8,9 @@ class ShopOwner(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     age = models.IntegerField()
 
+    def __str__(self) -> str:
+        return self.user.username
+
 
 class JoinCode(models.Model):
     code = models.CharField(max_length=10, unique=True)
@@ -17,3 +20,6 @@ class JoinCode(models.Model):
     used = models.BooleanField(default=False)
     joiner = models.ForeignKey(
         'ShopOwner', on_delete=models.SET_NULL, blank=True, null=True, related_name="joiner")
+
+    def __str__(self) -> str:
+        return self.code
