@@ -11,15 +11,15 @@ from knox.models import AuthToken
 
 from .models import JoinCode
 
-from .permissions import IsOwnerGroup
-
+from .permissions import IsOwnerGroup, IsOwnerDetail
 from rest_framework import status
 
 from .serializers import (
 
     ShopOwnerCreateSerializer,
     JoinCodeCreateSerializer,
-    JoinCodeDetailSerializer
+    JoinCodeDetailSerializer,
+    ShopOwnerDetailSerializer,
 
 )
 
@@ -70,8 +70,9 @@ class ShopOwnerSignUpAPIView(GenericAPIView):
         age = request.data.get("age", False)
 
         if not age:
-            errorMessage = {"field_error": {
-                "age": "age is required"}}
+            errorMessage = {
+                "field_error": {"age": "age is required"}
+            }
             return Response(data=errorMessage, status=status.HTTP_400_BAD_REQUEST)
 
         request.data.pop("age")
@@ -92,8 +93,11 @@ class ShopOwnerSignUpAPIView(GenericAPIView):
 
         self._addJoinerInJoinCodeInstance(joincode, new_shopowner_account)
 
+        ownerDetail = ShopOwnerDetailSerializer(new_shopowner_account).data
+
         return Response({
-            "user": UserSerializer(user, context=self.get_serializer_context()).data,
+            # "user": UserSerializer(user, context=self.get_serializer_context()).data,
+            "detail": ownerDetail,
             "token": AuthToken.objects.create(user)[1]
         })
 
@@ -156,3 +160,10 @@ class GetJoinCodeAPIView(RetrieveAPIView):
         joinCodeDetail = JoinCodeDetailSerializer(newJoinCode).data
 
         return Response(joinCodeDetail, status=status.status.HTTP_200_OK)
+
+
+class ShopOwnerDetailAPIView(RetrieveAPIView):
+
+    queryset = ShopOwner.objects.all()
+    serializer_class = ShopOwnerDetailSerializer()
+    permission_classes = (IsOwnerDetail, )
