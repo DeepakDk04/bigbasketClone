@@ -54,18 +54,17 @@ class LoginAPIView(KnoxLoginView):
                 context=self.get_context()
             ).data
 
-        userobj = User.objects.get(id=request.user.id)
         if request.user.groups.filter(name="Customer").exists():
             usertype = 'Customer'
-            account_id = userobj.customerprofile.customer.id
+            account_id = request.user.customerprofile.customer.id
 
         elif request.user.groups.filter(name="Deliveryservicer").exists():
             usertype = 'Deliverservicer'
-            account_id = userobj.deliveryservicerprofile.deliveryservicer.id
+            account_id = request.user.deliveryservicerprofile.deliveryservicer.id
 
         elif request.user.groups.filter(name="Shopowner").exists():
             usertype = 'Shopowner'
-            account_id = 0
+            account_id = request.user.shopowner.id
 
         else:
             usertype = 'unknown'
