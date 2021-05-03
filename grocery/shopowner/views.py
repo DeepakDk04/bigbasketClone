@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from shopowner.models import ShopOwner
 from rest_framework.generics import DestroyAPIView, ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 
 from django.contrib.auth.models import User, Group
 
@@ -21,6 +21,9 @@ from .serializers import (
     JoinCodeCreateSerializer,
     JoinCodeDetailSerializer,
     ShopOwnerDetailSerializer,
+
+    userModelCustomSerializer,
+    ShopOwnerUpdateDetailSerializer,
 
     AddProductSerializer,
     AddCategorySerializer,
@@ -93,6 +96,8 @@ class ShopOwnerSignUpAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        user.is_staff = True
+        user.save()
 
         group = Group.objects.get(name='Shopowner')
         user.groups.add(group)
@@ -119,7 +124,7 @@ class GetJoinCodeAPIView(RetrieveAPIView):
     ''' Get the joincode, To join in a admin group  '''
     queryset = JoinCode.objects.all()
     serializer_class = JoinCodeCreateSerializer
-    permission_classes = (IsOwnerGroup,)
+    permission_classes = (IsAuthenticated, IsOwnerGroup,)
 
     def _generateUniqueJoinCode(self):
         '''  Get unique code '''
@@ -162,12 +167,13 @@ class GetJoinCodeAPIView(RetrieveAPIView):
             createdby=shopowner).filter(used=False)
 
         if unUsedJoinCode.exists():
-
-            joinCodeDetail = JoinCodeDetailSerializer(unUsedJoinCode).data
-            return Response(joinCodeDetail, status=status.status.HTTP_200_OK)
+            ''' get instance from the queryset '''
+            instance = unUsedJoinCode.first()
+            joinCodeDetail = JoinCodeDetailSerializer(instance).data
+            return Response(joinCodeDetail, status=status.HTTP_200_OK)
 
         joinCodeData = {
-            "joincode": self._generateUniqueJoinCode(),
+            "code": self._generateUniqueJoinCode(),
             "createdby": shopowner.id
         }
 
@@ -177,14 +183,14 @@ class GetJoinCodeAPIView(RetrieveAPIView):
 
         joinCodeDetail = JoinCodeDetailSerializer(newJoinCode).data
 
-        return Response(joinCodeDetail, status=status.status.HTTP_200_OK)
+        return Response(joinCodeDetail, status=status.HTTP_200_OK)
 
 
 class CancelJoinCodeAPIView(DestroyAPIView):
     ''' Invalidate the Existing Joincode, no can can join using it later '''
     queryset = JoinCode.objects.all()
-    permission_classes = (IsOwnerJoinCode, )
-    lookup_field = 'joincode'
+    permission_classes = (IsAuthenticated, IsOwnerJoinCode, )
+    lookup_field = 'code'
 
     def delete(self, request, *args, **kwargs):
 
@@ -205,36 +211,72 @@ class ShopOwnerDetailAPIView(RetrieveAPIView):
     '''
     queryset = ShopOwner.objects.all()
     serializer_class = ShopOwnerDetailSerializer
-    permission_classes = (IsOwnerDetail, )
+    permission_classes = (IsAuthenticated, IsOwnerDetail, )
     lookup_field = 'id'
+
+
+class ShopOwnerUpdateDetailAPIView(UpdateAPIView):
+    '''
+    Get Detail of Shopowner Account
+    '''
+    queryset = ShopOwner.objects.all()
+    serializer_class = ShopOwnerUpdateDetailSerializer
+    permission_classes = (IsAuthenticated, IsOwnerDetail, )
+    lookup_field = 'id'
+
+    def update(self, request, *args, **kwargs):
+        ''' nested updates for user instance and account instance  '''
+        shopowner_instance = self.get_object()
+        user_data = request.data.get("user", False)
+        account_data = request.data.get("account", False)
+
+        if user_data:
+            ''' Updates the user instance '''
+            user_instance = shopowner_instance.user
+            user_updateserializer = userModelCustomSerializer(
+                user_instance, data=user_data, partial=True)
+            user_updateserializer.is_valid(raise_exception=True)
+            user_updateserializer.save()
+
+        if account_data:
+            ''' Updates the shopowner instance '''
+            shopowner_update_serializer = self.get_serializer(
+                shopowner_instance, data=account_data, partial=True)
+            shopowner_update_serializer.is_valid(raise_exception=True)
+            shopowner_update_serializer.save()
+
+        updatedShopOwnerData = ShopOwnerDetailSerializer(
+            shopowner_instance).data
+
+        return Response(data=updatedShopOwnerData, status=status.HTTP_202_ACCEPTED)
 
 
 class AddProductAPIView(CreateAPIView):
     ''' Add New Products to the database  '''
     queryset = Product.objects.all()
     serializer_class = AddProductSerializer
-    permission_classes = (IsOwnerGroup, )
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
 
 
 class AddCategoryAPIView(CreateAPIView):
     ''' Add new Category to the database '''
     queryset = Category.objects.all()
     serializer_class = AddCategorySerializer
-    permission_classes = (IsOwnerGroup, )
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
 
 
 class AddOfferAPIView(CreateAPIView):
     ''' Add new Offer to the database '''
     queryset = Offer.objects.all()
     serializer_class = AddOfferSerializer
-    permission_classes = (IsOwnerGroup, )
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
 
 
 class UpdateProductAPIView(UpdateAPIView):
     ''' Update New Products to the database  '''
     queryset = Product.objects.all()
     serializer_class = UpdateProductSerializer
-    permission_classes = (IsOwnerGroup, )
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
     lookup_field = 'id'
 
     def update(self, request, *args, **kwargs):
@@ -246,15 +288,15 @@ class UpdateProductAPIView(UpdateAPIView):
 
         product_serializer.save()
 
-        successMesage = {"product": "updated successfully"}
-        return Response(data=successMesage, status=status.HTTP_200_OK)
+        productData = ProductAdminViewSerializer(product_instance).data
+        return Response(data=productData, status=status.HTTP_200_OK)
 
 
 class UpdateCategoryAPIView(UpdateAPIView):
     ''' Update new Category to the database '''
     queryset = Category.objects.all()
     serializer_class = UpdateCategorySerializer
-    permission_classes = (IsOwnerGroup, )
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
     lookup_field = 'id'
 
     def update(self, request, *args, **kwargs):
@@ -266,15 +308,15 @@ class UpdateCategoryAPIView(UpdateAPIView):
 
         category_serializer.save()
 
-        successMesage = {"category": "updated successfully"}
-        return Response(data=successMesage, status=status.HTTP_200_OK)
+        categoryData = CategoryAdminViewSerializer(category_instance).data
+        return Response(data=categoryData, status=status.HTTP_200_OK)
 
 
 class UpdateOfferAPIView(UpdateAPIView):
     ''' Update new Offer to the database '''
     queryset = Offer.objects.all()
     serializer_class = UpdateOfferSerializer
-    permission_classes = (IsOwnerGroup, )
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
     lookup_field = 'id'
 
     def update(self, request, *args, **kwargs):
@@ -286,13 +328,13 @@ class UpdateOfferAPIView(UpdateAPIView):
 
         offer_serializer.save()
 
-        successMesage = {"offer": "updated successfully"}
-        return Response(data=successMesage, status=status.HTTP_200_OK)
+        OfferData = OfferAdminViewSerializer(offer_instance).data
+        return Response(data=OfferData, status=status.HTTP_200_OK)
 
 
 class DashBoardView(GenericAPIView):
     ''' Get details for the dashboard '''
-    permission_classes = (IsOwnerGroup, )
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
 
     def get(self, request, *args, **kwargs):
 

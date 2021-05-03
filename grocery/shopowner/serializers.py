@@ -28,6 +28,13 @@ class ShopOwnerDetailSerializer(ModelSerializer):
         depth = 1
 
 
+class ShopOwnerUpdateDetailSerializer(ModelSerializer):
+
+    class Meta:
+        model = ShopOwner
+        fields = "__all__"
+
+
 class JoinCodeCreateSerializer(ModelSerializer):
 
     class Meta:
@@ -90,16 +97,17 @@ class ProductAdminViewSerializer(ModelSerializer):
         model = Product
         fields = "__all__"
         depth = 1
-        
+
+
 class CategoryAdminViewSerializer(ModelSerializer):
 
     class Meta:
         model = Category
         fields = "__all__"
-        
+
+
 class OfferAdminViewSerializer(ModelSerializer):
 
     class Meta:
         model = Offer
         fields = "__all__"
-        
