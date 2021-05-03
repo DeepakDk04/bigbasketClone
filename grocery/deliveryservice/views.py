@@ -96,7 +96,7 @@ class DeliverServicerDetailView(RetrieveAPIView):
     '''
     queryset = DeliveryServicer.objects.all()
     serializer_class = DeliveryServicerDetailSerializer
-    permission_classes = (IsOwnerDeliver,)
+    permission_classes = (IsAuthenticated, IsOwnerDeliver,)
     lookup_field = 'id'
 
 
@@ -106,7 +106,7 @@ class DeliverServicerUpdateView(UpdateAPIView):
     '''
     queryset = DeliveryServicer.objects.all()
     serializer_class = DeliveryServicerUpdateSerializer
-    permission_classes = (IsOwnerDeliver,)
+    permission_classes = (IsAuthenticated, IsOwnerDeliver,)
     lookup_field = 'id'
 
     def update(self, request, *args, **kwargs):
@@ -198,7 +198,7 @@ class DeliverServicerAvailableUpdateView(UpdateAPIView):
     '''
     queryset = DeliveryServicer.objects.all()
     serializer_class = DeliverServicerAvailableUpdateSerializer
-    permission_classes = (IsOwnerDeliver,)
+    permission_classes = (IsAuthenticated, IsOwnerDeliver,)
     lookup_field = 'id'
 
 
@@ -208,7 +208,7 @@ class CheckOrderGivenView(RetrieveAPIView):
     '''
     queryset = DeliveryServicer.objects.all()
     serializer_class = CheckOrderGiven__OrderSerializer
-    permission_classes = (IsOwnerDeliver,)
+    permission_classes = (IsAuthenticated, IsOwnerDeliver,)
     lookup_field = 'id'
 
     def get(self, request, *args, **kwargs):

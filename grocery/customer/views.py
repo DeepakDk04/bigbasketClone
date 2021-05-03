@@ -181,7 +181,7 @@ class CustomerDetailView(RetrieveAPIView):
     '''
     queryset = Customer.objects.all()
     serializer_class = CustomerViewSerializer
-    permission_classes = (IsOwnerCustomer,)
+    permission_classes = (IsAuthenticated, IsOwnerCustomer,)
     lookup_field = 'id'
 
 
@@ -191,7 +191,7 @@ class CustomerUpdateView(UpdateAPIView):
     '''
     queryset = Customer.objects.all()
     serializer_class = CustomerUpdateCustomSerializer
-    permission_classes = (IsOwnerCustomer,)
+    permission_classes = (IsAuthenticated, IsOwnerCustomer,)
     lookup_field = 'id'
 
     def update(self, request, *args, **kwargs):
@@ -293,7 +293,7 @@ class CustomerDeleteView(DestroyAPIView):
     '''
     queryset = Customer.objects.all()
     serializer_class = CustomerDeleteSerializer
-    permission_classes = (IsOwnerCustomer,)
+    permission_classes = (IsAuthenticated, IsOwnerCustomer,)
     lookup_field = 'id'
 
 
@@ -302,7 +302,7 @@ class CustomerPlacedOrdersProgressView(RetrieveAPIView):
 
     queryset = Customer.objects.all()
     serializer_class = CustomerPlacedOrdersSerializer
-    permission_classes = (IsOwnerCustomer,)
+    permission_classes = (IsAuthenticated, IsOwnerCustomer,)
     lookup_field = 'id'
 
     def get(self, request, *args, **kwargs):

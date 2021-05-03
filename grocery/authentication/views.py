@@ -21,6 +21,7 @@ class RegisterAPIView(GenericAPIView):
     Creates the user account in customer group (default)
     '''
     serializer_class = RegisterSerializer
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

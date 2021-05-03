@@ -334,7 +334,7 @@ class UpdateOfferAPIView(UpdateAPIView):
 
 class DashBoardView(GenericAPIView):
     ''' Get details for the dashboard '''
-    permission_classes = (IsAuthenticated, IsOwnerGroup, )
+    permission_classes = (IsAuthenticated, IsOwnerGroup, IsAdminUser)
 
     def get(self, request, *args, **kwargs):
 
