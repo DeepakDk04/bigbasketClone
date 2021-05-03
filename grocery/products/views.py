@@ -4,6 +4,9 @@ from rest_framework.permissions import AllowAny
 from .models import Product
 from .serializers import ProductListSerializer, ProductDetailSerializer
 
+
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 # Create your views here.
 
 
@@ -14,6 +17,14 @@ class ProductListView(ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductListSerializer
     permission_classes = [AllowAny]
+
+    pagination_class = PageNumberPagination
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['name', 'category__name']
+    ordering_fields = ['stockCount', 'price']
+
+    ordering = ['-stockCount']
 
 
 class ProductDetailView(RetrieveAPIView):
