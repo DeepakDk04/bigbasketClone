@@ -1,48 +1,47 @@
-from order.models import Order
-from django.contrib.auth.models import User
-from django.contrib.auth.models import Group
-from .models import DeliveryServicer, DeliveryServicerProfile
-
-from rest_framework.permissions import AllowAny, IsAuthenticated
-
-from .permissions import (
-
-    IsOwnerDeliver,
-    IsOwnerDeliverProfile,
-    IsDeliverGroup,
-    IsOrderedCustomer
-
-)
-from rest_framework import status
-from rest_framework.generics import GenericAPIView
 from rest_framework.generics import (
+
+    GenericAPIView,
     CreateAPIView,
     RetrieveAPIView,
     UpdateAPIView,
 )
 
-from authentication.serializers import UserSerializer, RegisterSerializer
-from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from .permissions import (
+
+    IsOwnerDeliver,
+    IsDeliverGroup,
+    IsOrderedCustomer
+
+)
+
+from django.contrib.auth.models import User, Group
 from knox.models import AuthToken
+from .models import DeliveryServicer
 
+
+from authentication.serializers import UserSerializer, RegisterSerializer
 from customer.serializers import userModelCustomSerializer
-
 from .serializers import (
 
 
     DeliveryServicerProfileCreateSerializer,
     DeliveryServicerProfileUpdateSerializer,
-    DeliveryServicerUpdateSerializer,
 
     DeliveryServicerCreateSerializer,
+    DeliveryServicerUpdateSerializer,
     DeliveryServicerDetailSerializer,
 
     DeliveryServicerRatingsUpdateSerializer,
-
     DeliverServicerAvailableUpdateSerializer,
+
     CheckOrderGiven__OrderSerializer,
 
 )
+
+
+from rest_framework.response import Response
+from rest_framework import status
 
 
 # Create your views here.
