@@ -1,39 +1,44 @@
-from .permissions import IsCustomerUser, IsCartOwner, IsOrderShipper
-from django.utils import timezone
-# from django.http.response import HttpResponse, JsonResponse
+from rest_framework.generics import (
 
-# Create your views here.
-from rest_framework.permissions import AllowAny, IsAuthenticated
+    CreateAPIView,
+    UpdateAPIView,
 
-from .models import Cart, CartItem, Order, OrderItem
+)
+
+
+from rest_framework.permissions import IsAuthenticated
+from .permissions import (
+
+    IsCustomerUser,
+    IsCartOwner,
+    IsOrderShipper
+
+)
+
+from .models import Cart, CartItem, Order
 from deliveryservice.models import DeliveryServicer
-from products.models import Product
-from customer.models import Customer
+
 
 from .serializers import (
 
     OrderCreateSerializer,
-    OrderItemCreateSerializer,
     OrderResponseDisplaySerializer,
-    CartItemSerializer,
-    CartUpdateSerializer,
     OrderStatusUpdateSerializer,
 
+    OrderItemCreateSerializer,
+
+    CartItemSerializer,
+    CartUpdateSerializer,
+
 )
+
+
+from django.utils import timezone
 from rest_framework import status
-
-
-from rest_framework.generics import (
-    CreateAPIView,
-    RetrieveAPIView,
-    UpdateAPIView,
-    DestroyAPIView,
-    GenericAPIView,
-
-)
-
-
 from rest_framework.response import Response
+
+
+# Create your views here.
 
 
 class OrderCreateAPTView(CreateAPIView):
