@@ -1,31 +1,56 @@
-from rest_framework.response import Response
-from shopowner.models import ShopOwner
-from rest_framework.generics import DestroyAPIView, ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView
-from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.generics import (
 
-from django.contrib.auth.models import User, Group
+    GenericAPIView,
+    ListAPIView,
+    CreateAPIView,
+    RetrieveAPIView,
+    UpdateAPIView,
+    DestroyAPIView,
 
-from authentication.serializers import RegisterSerializer, UserSerializer
-from knox.models import AuthToken
+)
 
-from .models import JoinCode
-from products.models import Product, Offer, Category
+from rest_framework.permissions import (
+
+    AllowAny,
+    IsAdminUser,
+    IsAuthenticated
+
+)
+
+from .permissions import (
+
+    IsOwnerGroup,
+    IsOwnerDetail,
+    IsOwnerJoinCode
+
+)
+
+from django.contrib.auth.models import Group
+
 from customer.models import Customer
 from deliveryservice.models import DeliveryServicer
+from knox.models import AuthToken
 from order.models import Order
+from products.models import Product, Offer, Category
+from .models import ShopOwner, JoinCode
 
-from .permissions import IsOwnerGroup, IsOwnerDetail, IsOwnerJoinCode
+
+from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 
+
+from authentication.serializers import RegisterSerializer
 from .serializers import (
 
-    ShopOwnerCreateSerializer,
     JoinCodeCreateSerializer,
     JoinCodeDetailSerializer,
-    ShopOwnerDetailSerializer,
 
     userModelCustomSerializer,
+
+    ShopOwnerCreateSerializer,
+    ShopOwnerDetailSerializer,
     ShopOwnerUpdateDetailSerializer,
 
     AddProductSerializer,
@@ -39,15 +64,12 @@ from .serializers import (
     ProductAdminViewSerializer,
     CategoryAdminViewSerializer,
     OfferAdminViewSerializer,
-
     OrderAdminViewSerializer,
     CustomerAdminViewSerializer,
     DelivererAdminViewSerializer,
 
 )
 
-from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 
