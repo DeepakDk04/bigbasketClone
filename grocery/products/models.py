@@ -10,6 +10,8 @@ class Product(models.Model):
         'Offer', on_delete=models.CASCADE, blank=True, null=True)
     price = models.IntegerField(default=0)
     stockCount = models.IntegerField(default=0)
+    image = models.ImageField(
+        null=True, blank=True, upload_to="img/products/", default="default_product.png")
 
     def __str__(self):
         return self.name
