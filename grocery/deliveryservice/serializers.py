@@ -147,7 +147,7 @@ class CheckOrderGiven__OrderSerializer(ModelSerializer):
 
     class Meta:
         model = Order
-        exclude = ('ordershipper', 'status')
+        exclude = ('ordershipper', )
 
 # class CheckOrderGivenSerializer(ModelSerializer):
 

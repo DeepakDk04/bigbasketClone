@@ -214,7 +214,8 @@ class CheckOrderGivenView(RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         ''' get the placed orders '''
         deliverer = self.get_object()
-        new_orders = deliverer.mydeliveries.all().filter(status="placed")
+        new_orders = deliverer.mydeliveries.all().exclude(status="reached").exclude(
+            status="cancelled").exclude(status="notplaced")
 
         if new_orders.exists():
             order_response = self.get_serializer(new_orders, many=True).data
