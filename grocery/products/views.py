@@ -22,7 +22,7 @@ class ProductListView(ListAPIView):
 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['name', 'category__name']
-    ordering_fields = ['stockCount', 'price']
+    ordering_fields = ['id', 'name', 'price', 'stockCount']
 
     ordering = ['-stockCount']
 
