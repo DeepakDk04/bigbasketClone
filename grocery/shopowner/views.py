@@ -11,6 +11,9 @@ from knox.models import AuthToken
 
 from .models import JoinCode
 from products.models import Product, Offer, Category
+from customer.models import Customer
+from deliveryservice.models import DeliveryServicer
+from order.models import Order
 
 from .permissions import IsOwnerGroup, IsOwnerDetail, IsOwnerJoinCode
 from rest_framework import status
@@ -37,7 +40,14 @@ from .serializers import (
     CategoryAdminViewSerializer,
     OfferAdminViewSerializer,
 
+    OrderAdminViewSerializer,
+    CustomerAdminViewSerializer,
+    DelivererAdminViewSerializer,
+
 )
+
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 
@@ -272,8 +282,56 @@ class AddOfferAPIView(CreateAPIView):
     permission_classes = (IsAuthenticated, IsOwnerGroup, )
 
 
+class ProductDetailAdminAPIView(ListAPIView):
+    ''' View all the Products in the database  '''
+    queryset = Product.objects.all()
+    serializer_class = ProductAdminViewSerializer
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
+
+    pagination_class = PageNumberPagination
+
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = ['name', 'category__name']
+    ordering_fields = ['id', 'name', 'price', 'stockCount']
+
+    ordering = ['name']
+
+
+class CategoryDetailAdminAPIView(ListAPIView):
+    ''' View all the Category in the database '''
+    queryset = Category.objects.all()
+    serializer_class = CategoryAdminViewSerializer
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
+
+    pagination_class = PageNumberPagination
+
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = ['name', 'description']
+    ordering_fields = ['id', 'name']
+
+    ordering = ['name']
+
+
+class OfferDetailAdminAPIView(ListAPIView):
+    ''' View all the Offer in the database '''
+    queryset = Offer.objects.all()
+    serializer_class = OfferAdminViewSerializer
+    permission_classes = (IsAuthenticated, IsOwnerGroup, )
+
+    pagination_class = PageNumberPagination
+
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = ['description']
+    ordering_fields = ['id', 'description', 'percentage', 'start', 'expiry']
+
+    ordering = ['description']
+
+
 class UpdateProductAPIView(UpdateAPIView):
-    ''' Update New Products to the database  '''
+    ''' Update Products in the database  '''
     queryset = Product.objects.all()
     serializer_class = UpdateProductSerializer
     permission_classes = (IsAuthenticated, IsOwnerGroup, )
@@ -293,7 +351,7 @@ class UpdateProductAPIView(UpdateAPIView):
 
 
 class UpdateCategoryAPIView(UpdateAPIView):
-    ''' Update new Category to the database '''
+    ''' Update Category Details in the database '''
     queryset = Category.objects.all()
     serializer_class = UpdateCategorySerializer
     permission_classes = (IsAuthenticated, IsOwnerGroup, )
@@ -313,7 +371,7 @@ class UpdateCategoryAPIView(UpdateAPIView):
 
 
 class UpdateOfferAPIView(UpdateAPIView):
-    ''' Update new Offer to the database '''
+    ''' Update Offer details in the database '''
     queryset = Offer.objects.all()
     serializer_class = UpdateOfferSerializer
     permission_classes = (IsAuthenticated, IsOwnerGroup, )
@@ -332,25 +390,84 @@ class UpdateOfferAPIView(UpdateAPIView):
         return Response(data=OfferData, status=status.HTTP_200_OK)
 
 
-class DashBoardView(GenericAPIView):
-    ''' Get details for the dashboard '''
+class OrderDetailAdminAPIView(ListAPIView):
+    ''' View all the Orders in the database '''
+
+    queryset = Order.objects.all()
+    serializer_class = OrderAdminViewSerializer
+    permission_classes = (IsAuthenticated, IsOwnerGroup)
+
+    pagination_class = PageNumberPagination
+
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = ['items__product__name']
+    ordering_fields = ['amount', 'placedon']
+
+    ordering = ['-placedon']
+
+
+class CustomerListAdminAPIView(ListAPIView):
+    ''' View all the customers in database '''
+
+    queryset = Customer.objects.all()
+    serializer_class = CustomerAdminViewSerializer
     permission_classes = (IsAuthenticated, IsOwnerGroup, IsAdminUser)
+
+    pagination_class = PageNumberPagination
+
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = ['profile__user__username']
+    ordering_fields = ['profile__user__username', 'profile__age',
+                       'profile__user__last_login', 'profile__user__date_joined']
+
+    ordering = ['-profile__user__date_joined']
+
+
+class DelivererListAdminAPIView(ListAPIView):
+    ''' View all the customers in database '''
+
+    queryset = DeliveryServicer.objects.all()
+    serializer_class = DelivererAdminViewSerializer
+    permission_classes = (IsAuthenticated, IsOwnerGroup, IsAdminUser)
+
+    pagination_class = PageNumberPagination
+
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = ['profile__user__username']
+    ordering_fields = ['profile__user__username', 'profile__age',
+                       'profile__user__last_login', 'profile__user__date_joined']
+
+    ordering = ['-profile__user__date_joined']
+
+
+class StatisticAPIView(GenericAPIView):
+    ''' Get statistical details for the dashboard '''
+
+    permission_classes = (IsAuthenticated, IsOwnerGroup)
 
     def get(self, request, *args, **kwargs):
 
-        allProducts = Product.objects.all()
-        allCategories = Category.objects.all()
-        allOffers = Offer.objects.all()
-
-        productData = ProductAdminViewSerializer(allProducts, many=True).data
-        categoryData = CategoryAdminViewSerializer(
-            allCategories, many=True).data
-        OfferData = OfferAdminViewSerializer(allOffers, many=True).data
+        totalProducts = Product.objects.count()
+        totalCategories = Category.objects.count()
+        totalOffers = Offer.objects.count()
+        totalOrders = Order.objects.count()
+        totalCustomers = Customer.objects.count()
+        totalDeliverers = DeliveryServicer.objects.count()
+        totalAvailabeDeliverers = DeliveryServicer.objects.filter(
+            available=True).count()
 
         allData = {
-            "products": productData,
-            "categories": categoryData,
-            "offers": OfferData
+            "totalProducts": totalProducts,
+            "totalCategories": totalCategories,
+            "totalOffers": totalOffers,
+            "totalOrders": totalOrders,
+            "totalCustomers": totalCustomers,
+            "totalDeliverers": totalDeliverers,
+            "totalAvailabeDeliverers": totalAvailabeDeliverers,
+
         }
 
         return Response(data=allData, status=status.HTTP_200_OK)
