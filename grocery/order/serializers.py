@@ -1,12 +1,12 @@
-from django.contrib.auth.models import User
-from django.db import models
-from rest_framework import fields
 from rest_framework.serializers import ModelSerializer
 
+
+from django.contrib.auth.models import User
+
 from .models import Cart, CartItem, Order, OrderItem
-from products.models import Product
-from deliveryservice.models import DeliveryServicer, DeliveryServicerProfile
 from customer.models import DeliveryAddress
+from deliveryservice.models import DeliveryServicer, DeliveryServicerProfile
+from products.models import Product
 
 
 class UserDisplaySerializer(ModelSerializer):
@@ -83,7 +83,7 @@ class Cart__Items__ProductSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('name',)
+        fields = ('name', 'image')
 
 
 class Cart__ItemsSerializer(ModelSerializer):
