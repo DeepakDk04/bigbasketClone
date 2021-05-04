@@ -1,21 +1,20 @@
-
-from products.models import Product
-from order.models import Cart, CartItem, Order
-from django.contrib.auth.models import User
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from .permissions import IsOwnerProfile, IsOwnerCustomer, IsOwnerUser, IsCustomerOwnsOrder
-
-
 from rest_framework.generics import (
+
     CreateAPIView,
     RetrieveAPIView,
     UpdateAPIView,
     DestroyAPIView,
 )
 
-from rest_framework import status
-from .models import Customer, CustomerProfile, DeliveryAddress
+
+from rest_framework.permissions import IsAuthenticated
+from .permissions import IsOwnerCustomer
+
+
+from django.contrib.auth.models import User
+from .models import Customer, DeliveryAddress
+from order.models import Cart
+
 
 from .serializers import (
 
@@ -35,6 +34,10 @@ from .serializers import (
     CustomerPlacedOrdersSerializer,
 
 )
+
+from rest_framework.response import Response
+from rest_framework import status
+
 
 # Create your views here.
 
