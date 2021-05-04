@@ -1,19 +1,22 @@
-from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.generics import GenericAPIView
+
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 
-from django.contrib.auth import login
-from django.contrib.auth.models import Group, User
-
+from django.contrib.auth.models import Group
 from knox.models import AuthToken
-from knox.views import LoginView as KnoxLoginView
 
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from .serializers import UserSerializer, RegisterSerializer
 
-# Create your views here.
+from django.contrib.auth import login
+from knox.views import LoginView as KnoxLoginView
 
-# Register API
+
+from rest_framework.response import Response
+from rest_framework import status
+
+
+# Create your views here.
 
 
 class RegisterAPIView(GenericAPIView):
@@ -32,7 +35,7 @@ class RegisterAPIView(GenericAPIView):
         return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
             "token": AuthToken.objects.create(user)[1]
-        })
+        }, status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(KnoxLoginView):
