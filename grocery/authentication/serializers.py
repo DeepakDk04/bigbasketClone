@@ -1,18 +1,16 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from django.contrib.auth.models import User
 
-# User Serializer
 
-
-class UserSerializer(ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    ''' User model serializer '''
     class Meta:
         model = User
         fields = ('id', 'username', 'email')
 
-# Register Serializer
 
-
-class RegisterSerializer(ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
+    ''' used to Resiger user account '''
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password')
@@ -23,3 +21,11 @@ class RegisterSerializer(ModelSerializer):
             validated_data['username'], validated_data['email'], validated_data['password'])
 
         return user
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """ Serializer for password change endpoint. """
+
+    model = User
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
