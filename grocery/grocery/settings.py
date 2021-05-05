@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'knox',
+    'django_rest_passwordreset',
 
     'products.apps.ProductsConfig',
     'customer.apps.CustomerConfig',
@@ -175,3 +176,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env('EMAIL_ID')
 EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')
+
+DEFAULT_FROM_EMAIL = env('EMAIL_ID')
