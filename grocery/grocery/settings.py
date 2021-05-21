@@ -186,3 +186,8 @@ EMAIL_HOST_USER = env('EMAIL_ID')
 EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')
 
 DEFAULT_FROM_EMAIL = env('EMAIL_ID')
+
+#When upgrading django 3.1 to 3.2  
+# It throws warning on models that not explicitely set a autofield attribute
+# It is fixed by the below setting
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
